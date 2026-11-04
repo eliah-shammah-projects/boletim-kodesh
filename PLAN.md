@@ -67,6 +67,8 @@ Além disso:
 | Ambiente local (Fase 0) | Só Python, sem Node e sem Docker no computador do desenvolvedor. Tailwind pelo `pytailwindcss`; HTMX e Alpine servidos pelo próprio app, sem CDN |
 | Testes de banco (Fase 0) | Rodam no GitHub Actions contra MySQL. Sem MySQL local, são pulados no computador |
 | Blueprint `main` (Fase 0) | Além dos 9 da lista: tela inicial (pendências) e `/healthz` para o monitoramento |
+| Protótipo (Fase 1) | Em `/prototipo`, com dados fictícios, ligado só fora de produção (`PROTOTYPE_ENABLED`). Para abrir: `rodar-prototipo.bat`. Some quando as telas reais existirem |
+| Componentes (Fase 1) | Feitos antes do protótipo, e o protótipo usa só eles. Documentação em `app/templates/components/README.md` |
 
 ## 3. Stack
 
@@ -340,11 +342,11 @@ Regras:
 - [x] Teste que grava e lê do banco texto com acentos e com hebraico
 
 ### Fase 1: Design e protótipo
-- [ ] Identidade visual da seção 6b configurada no Tailwind (cores, fontes, espaçamentos) e componentes (botões, tabelas, formulários, alertas, modais)
+- [x] Identidade visual da seção 6b configurada no Tailwind (cores, fontes, espaçamentos) e componentes (botões, tabelas, formulários, alertas, modais)
 - [ ] Logo em SVG (pedir o original à escola ou vetorizar o PNG). Tentativa de vetorizar o PNG ficou parecida, mas não idêntica: por ora usamos `logo.png` (464px, ~300 dpi a 4 cm no boletim). Pedir o original (SVG/PDF/AI/EPS) à escola, à Digital Bees (fez o site) ou à gráfica
-- [ ] Protótipo navegável das telas principais: tela inicial com pendências (rabino e direção), shiur, grade de notas, scan pelo celular, frequência, boletim
+- [x] Protótipo navegável das telas principais: tela inicial com pendências (rabino e direção), shiur, grade de notas, scan pelo celular, frequência, boletim
 - [ ] Revisão do protótipo com o seu pai e um rabino, e ajustes
-- [ ] Biblioteca de componentes Jinja (macros) baseada no protótipo
+- [x] Biblioteca de componentes Jinja (macros) baseada no protótipo
 
 **Pronto quando:** o protótipo foi aprovado e os componentes estão prontos para uso.
 
