@@ -35,7 +35,7 @@ Além disso:
 |---|---|
 | Idioma | Interface e boletim em português. Nomes de matérias e provas podem ter hebraico |
 | UX/UI | Prioridade. Sistema visual e protótipo das telas principais antes de codar as telas |
-| Visual | Azul do logo Or Yossef (#005A8E) e branco. Moderno e sóbrio, sem cara de template genérico: sem gradientes, sem emojis, sem enfeites. Paleta e tipografia na seção 6b |
+| Visual | Azul do logo Or Yossef (#005A93) e branco. Moderno e sóbrio, sem cara de template genérico: sem gradientes, sem emojis, sem enfeites. Paleta e tipografia na seção 6b |
 | Usuários | Rabinos usam celular e computador, com familiaridade média com tecnologia |
 | Tela inicial | Lista de pendências de cada usuário, com atalho direto para resolver cada uma |
 | Períodos | Trimestres, criados por ano letivo (padrão 3, editável) |
@@ -302,7 +302,7 @@ Cores tiradas do logo:
 
 | Token | Cor | Uso |
 |---|---|---|
-| `primary` | `#005A8E` | Azul do logo. Botões principais, links, cabeçalho, destaques. Contraste 7.4:1 sobre branco |
+| `primary` | `#005A93` | Azul do logo. Botões principais, links, cabeçalho, destaques. Contraste 7.3:1 sobre branco (medido no logo.png) |
 | `primary-dark` | `#00466F` | Hover e texto de títulos |
 | `primary-light` | `#E6F0F6` | Fundo de linha selecionada, aba ativa, áreas de destaque |
 | `gray` | `#6E6E6E` | Cinza do logo. Texto secundário, rótulos |

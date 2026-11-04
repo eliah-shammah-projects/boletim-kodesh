@@ -23,7 +23,7 @@ Sistema de notas de kodesh de uma yeshiva. Plano completo e modelo de dados em `
 ## UX e UI
 
 - UX e UI são prioridade. Usar sempre os componentes (macros Jinja) da Fase 1. Não criar estilos avulsos.
-- Cores e fontes só pelos tokens da seção 6b do PLAN.md (azul do logo `#005A8E`). Sem gradientes, sem emojis, sem enfeites.
+- Cores e fontes só pelos tokens da seção 6b do PLAN.md (azul do logo `#005A93`). Sem gradientes, sem emojis, sem enfeites.
 - Toda tela funciona em celular, tablet e computador.
 - Toda ação dá retorno claro (salvo, erro, o que falta). Ação destrutiva sempre pede confirmação.
 - Conferir os critérios de usabilidade da seção 6 do PLAN.md antes de concluir uma tela.
