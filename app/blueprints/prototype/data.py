@@ -97,14 +97,26 @@ SHIUR_COLORS = {
     "verde": ("Verde", "#2E7D4F"),
     "vinho": ("Vinho", "#8E2C48"),
     "laranja": ("Laranja", "#B4561F"),
-    "roxo": ("Roxo", "#6B4FA0"),
+    "marrom": ("Marrom", "#7A4A2A"),
     "dourado": ("Dourado", "#8F6B12"),
     "petroleo": ("Petróleo", "#1F6F73"),
     "grafite": ("Grafite", "#4A5560"),
 }
-_COLORS = ["azul", "vinho", "verde", "laranja", "roxo", "petroleo"]
+_COLORS = ["azul", "vinho", "verde", "laranja", "marrom", "petroleo"]
 for _c, _color in zip(CLASSES, _COLORS, strict=True):
     _c["color"] = _color
+
+# O que falta em cada shiur (primeira coisa que aparece na lista de shiurim).
+_TODO = {
+    "alef": "Faltam 2 notas na Prova 2 de Gemara",
+    "bet": "Aguardando a revisão da direção",
+    "gimel": "Boletins liberados",
+    "dalet": "Faltam notas em 3 matérias e a frequência",
+    "he": "Falta lançar 2 provas de Navi",
+    "vav": "Aguardando a revisão da direção",
+}
+for _c in CLASSES:
+    _c["todo"] = _TODO[_c["slug"]]
 
 CLASS_OPTIONS = [(c["slug"], c["name"]) for c in CLASSES]
 
@@ -254,47 +266,6 @@ ATTENDANCE = {
     1011: (0, 0),
     1027: (1, 1),
 }
-
-# Pendências do rabino logado (Rav Moshe Levi).
-RABBI_TODO = [
-    {
-        "kind": "warning",
-        "icon": "clipboard-list",
-        "title": "Prova 2 de Gemara sem nota",
-        "detail": "Shiur Alef · 2 alunos sem nota",
-        "action": "Lançar notas",
-        "endpoint": "prototype.grades",
-    },
-    {
-        "kind": "warning",
-        "icon": "camera",
-        "title": "Scans faltando na Prova 1 de Gemara",
-        "detail": "Shiur Alef · 5 alunos sem scan",
-        "action": "Enviar scans",
-        "endpoint": "prototype.scans",
-    },
-    {
-        "kind": "warning",
-        "icon": "calendar-check",
-        "title": "Frequência do 1º trimestre não lançada",
-        "detail": "Shiur Alef",
-        "action": "Lançar frequência",
-        "endpoint": "prototype.attendance",
-    },
-    {
-        "kind": "warning",
-        "icon": "message-square",
-        "title": "Comentários do boletim faltando",
-        "detail": "Shiur Alef · 4 de 12 alunos sem comentário",
-        "action": "Escrever comentários",
-        "endpoint": "prototype.shiur",
-    },
-]
-
-RABBI_DONE = [
-    "Notas de Chumash lançadas · Shiur Dalet",
-    "Prova 1 de Gemara com todas as notas · Shiur Alef",
-]
 
 INACTIVE_RABBIS = ["Rav Shimon Hazan"]
 

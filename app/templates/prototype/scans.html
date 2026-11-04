@@ -1,8 +1,9 @@
 {% extends "layouts/app.html" %}
 {% from "components/ui.html" import icon, button, status, alert, card, page_header %}
-{% block title %}Scans · Gemara{% endblock %}
+{% from "components/forms.html" import file_upload %}
+{% block title %}Scans da Prova 1{% endblock %}
 {% block content %}
-{{ page_header("Scans · Prova 1", "Gemara · Shiur Alef · " ~ d.TERM["name"], back_href=url_for("prototype.grades"), back_label="Notas de Gemara") }}
+{{ page_header("Scans da Prova 1", "Gemara, Shiur Alef, " ~ d.TERM["name"]|lower, back_href=url_for("prototype.grades"), back_label="Notas de Gemara") }}
 
 {% set a = d.ASSESSMENTS[0] %}
 {% set scans = d.SCANS[a.id] %}
@@ -30,12 +31,12 @@
           }
         }, 150);
       } }"
-  data-title="{{ title }}" class="flex flex-col gap-3 border-t border-border p-4 first:border-t-0 sm:flex-row sm:items-center sm:px-6">
+  data-title="{{ title }}" class="flex flex-col gap-3 border-t border-border px-5 py-4 first:border-t-0 sm:flex-row sm:items-center sm:px-6">
   <div class="flex-1">
     <p class="font-semibold">{{ title }}</p>
     {% if subtitle %}<p class="text-sm text-gray">{{ subtitle }}</p>{% endif %}
     <p class="mt-1" x-show="state !== 'uploading'">
-      <span x-show="pages > 0" class="inline-flex items-center gap-1.5 rounded-sm bg-success-light px-2 py-0.5 text-sm font-medium text-success">{{ icon("circle-check", "size-4") }}<span x-text="pages === 1 ? 'Enviado · 1 página' : 'Enviado · ' + pages + ' páginas'"></span></span>
+      <span x-show="pages > 0" class="inline-flex items-center gap-1.5 rounded-sm bg-success-light px-2 py-0.5 text-sm font-medium text-success">{{ icon("circle-check", "size-4") }}<span x-text="pages === 1 ? 'Enviado, 1 página' : 'Enviado, ' + pages + ' páginas'"></span></span>
       <span x-show="pages === 0">{{ status("warning", "Falta enviar") }}</span>
     </p>
     <div x-show="state === 'uploading'" x-cloak class="mt-2" role="status">
@@ -44,13 +45,8 @@
     </div>
   </div>
   <div class="flex gap-2">
-    <button type="button" x-show="pages > 0" class="inline-flex min-h-11 items-center gap-2 rounded-md px-3 font-medium text-primary hover:bg-primary-light">{{ icon("eye") }}<span>Ver</span></button>
-    <label for="{{ input_id }}" class="inline-flex min-h-11 flex-1 cursor-pointer items-center justify-center gap-2 rounded-md px-4 font-medium sm:flex-none"
-      :class="pages > 0 ? 'border border-border bg-white text-primary-dark hover:bg-primary-light' : 'bg-primary text-white hover:bg-primary-dark'">
-      {{ icon("camera") }}<span x-text="pages > 0 ? 'Adicionar página' : 'Fotografar'">Fotografar</span>
-    </label>
-    <input id="{{ input_id }}" type="file" accept="image/*,application/pdf" capture="environment" multiple class="sr-only"
-      @change="upload($event.target.files); $event.target.value = ''">
+    <button type="button" x-show="pages > 0" class="inline-flex min-h-11 items-center gap-2 rounded-md px-3 font-medium text-primary hover:bg-primary-light"><span>Ver scan</span></button>
+    {{ file_upload(input_id, has_files="pages > 0") }}
   </div>
 </li>
 {%- endmacro %}
@@ -64,7 +60,7 @@
   {% endcall %}
 
   {% set missing = d.STUDENTS|rejectattr("id", "in", scans.keys()|list)|list %}
-  {% call card("Prova de cada aluno", missing|length ~ " de " ~ d.STUDENTS|length ~ " sem scan · os que faltam aparecem primeiro", padded=False) %}
+  {% call card("Prova de cada aluno", missing|length ~ " de " ~ d.STUDENTS|length ~ " sem scan. Os que faltam aparecem primeiro.", padded=False) %}
   <ul>
     {% for s in missing + (d.STUDENTS|selectattr("id", "in", scans.keys()|list)|list) %}
     {{ upload_row(s.name, "Nota: " ~ (d.SCORES[(s.id, a.id)]|decimal if d.SCORES[(s.id, a.id)] not in ("A", "D", None) else ("Ausente" if d.SCORES[(s.id, a.id)] == "A" else "–")), scans.get(s.id), "scan-" ~ s.id) }}

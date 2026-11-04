@@ -1,60 +1,69 @@
 {% extends "layouts/app.html" %}
-{% from "components/ui.html" import icon, button, status, alert, page_header %}
-{% block title %}Notas · Gemara{% endblock %}
+{% from "components/ui.html" import icon, button, status, page_header, empty_state, tabs, save_indicator, modal %}
+{% from "components/forms.html" import text_input %}
+{% from "components/grade.html" import grade_cell %}
+{% block title %}Notas de Gemara{% endblock %}
 {% block scripts %}<script src="{{ url_for('static', filename='js/grade-grid.js') }}" defer></script>{% endblock %}
 {% block content %}
+{% macro shown(v) -%}
+{{ "Ausente" if v == "A" else ("Dispensado" if v == "D" else (v|decimal if v is not none else "")) }}
+{%- endmacro %}
 <div x-data="{ term: 1 }">
-{% call page_header("Gemara · Shiur Alef", d.RABBIS["levi"], back_href=url_for("prototype.shiur"), back_label="Shiur Alef") %}
-  {{ button("Nova prova", icon_name="plus", attrs={"data-open-dialog": "nova-prova"}) }}
+{% call page_header("Notas de Gemara", "Shiur Alef, " ~ d.RABBIS["levi"], back_href=url_for("prototype.shiur"), back_label="Shiur Alef") %}
+  {{ button("Criar prova", icon_name="plus", attrs={"data-open-dialog": "nova-prova"}) }}
 {% endcall %}
 
-<div class="grid gap-4">
-<div>{% include "prototype/_term_tabs.html" %}</div>
+<div class="mb-6">{{ tabs("term", [(1, "1º trimestre"), (2, "2º trimestre"), (3, "3º trimestre")], "Trimestre") }}</div>
+
 {% for n in (2, 3) %}
 <div x-show="term === {{ n }}" x-cloak>
-  {% from "components/ui.html" import empty_state %}
-  {% call empty_state("Nenhuma prova de Gemara no " ~ n ~ "º trimestre ainda.", "clipboard-list") %}{{ button("Criar a primeira prova", icon_name="plus", attrs={"data-open-dialog": "nova-prova"}) }}{% endcall %}
+  {% call empty_state("Nenhuma prova de Gemara no " ~ n ~ "º trimestre ainda.") %}{{ button("Criar prova", icon_name="plus", attrs={"data-open-dialog": "nova-prova"}) }}{% endcall %}
 </div>
 {% endfor %}
+
 <div x-show="term === 1" x-data="gradeGrid()" class="grid gap-4">
-  <div class="flex flex-col gap-3 rounded-md border border-border bg-white p-4 sm:flex-row sm:items-center sm:justify-between">
-    <p class="flex items-start gap-2 text-sm text-gray">
-      {{ icon("info", "size-5 text-primary") }}
-      <span>Digite a nota e aperte <kbd class="rounded-sm border border-border bg-surface px-1.5 font-sans">Enter</kbd> para ir ao próximo aluno. Vírgula ou ponto. <strong class="text-text">A</strong> = ausente, <strong class="text-text">D</strong> = dispensado. Salva sozinho.</span>
-    </p>
-    <p class="flex shrink-0 items-center gap-2 font-medium" aria-live="polite"
-      :class="errors > 0 ? 'text-danger' : (pending > 0 ? 'text-gray' : 'text-success')">
-      <span x-show="errors === 0 && pending === 0">{{ icon("circle-check") }}</span>
-      <span x-show="pending > 0 && errors === 0" x-cloak>{{ icon("loader-circle", "size-5 animate-spin") }}</span>
-      <span x-show="errors > 0" x-cloak>{{ icon("circle-x") }}</span>
-      <span x-text="statusText">Todas as notas estão salvas</span>
-    </p>
+  {# O que falta, primeiro. #}
+  {% set ns = namespace(missing=0) %}
+  {% for s in d.STUDENTS %}{% if d.SCORES[(s.id, d.ASSESSMENTS[1].id)] is none %}{% set ns.missing = ns.missing + 1 %}{% endif %}{% endfor %}
+  <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+    <p class="text-gray">Faltam <strong class="text-text">{{ ns.missing }} notas</strong> na Prova 2. Digite a nota e aperte Enter para ir ao próximo aluno. Use A para ausente e D para dispensado.</p>
+    {{ save_indicator(saved="Todas as notas salvas", error="Há notas com erro, não salvas.") }}
   </div>
 
-  {# Celular: escolher a prova. #}
-  <div class="flex gap-2 overflow-x-auto pb-1 md:hidden" role="tablist" aria-label="Escolher prova">
+  {# Celular: uma prova por vez, lista de alunos. #}
+  <div class="grid gap-3 md:hidden" x-data="{ col: 1 }">
+    {{ tabs("col", [(0, d.ASSESSMENTS[0].name), (1, d.ASSESSMENTS[1].name), (2, d.ASSESSMENTS[2].name)], "Prova") }}
     {% for a in d.ASSESSMENTS %}
-    <button type="button" role="tab" @click="col = {{ loop.index0 }}" :aria-selected="col === {{ loop.index0 }}"
-      class="min-h-11 shrink-0 rounded-md border px-4 font-medium"
-      :class="col === {{ loop.index0 }} ? 'border-primary bg-primary text-white' : 'border-border bg-white text-text'">{{ a.name }}</button>
+    {% set ci = loop.index0 %}
+    <div x-show="col === {{ ci }}" {% if ci != 1 %}x-cloak{% endif %}>
+      <p class="mb-2 text-sm text-gray">{{ a.date }}{% if a.max != d.SCALE_MAX %}, nota máxima {{ a.max|decimal }}{% endif %}{% if not a.in_report %}, fora do boletim{% endif %}</p>
+      <ul class="divide-y divide-border rounded-md border border-border bg-white" data-grid>
+        {% for s in d.STUDENTS %}
+        <li class="flex items-center gap-3 px-4 py-2">
+          <span class="flex-1 font-medium">{{ s.name }}</span>
+          <div class="w-36">{{ grade_cell(shown(d.SCORES[(s.id, a.id)]), loop.index0, 0, a.max, a.name ~ ", " ~ s.name, wide=True) }}</div>
+        </li>
+        {% endfor %}
+      </ul>
+      <a href="{{ url_for('prototype.scans') }}" class="mt-3 flex min-h-11 items-center justify-center gap-2 rounded-md border border-border bg-white px-4 font-medium text-primary-dark hover:bg-primary-light">{{ icon("camera") }}Scans da {{ a.name }}</a>
+    </div>
     {% endfor %}
   </div>
 
-  <div class="overflow-x-auto rounded-md border border-border bg-white">
+  {# Computador: nome fixo à esquerda e cabeçalho fixo. #}
+  <div class="hidden max-h-[70vh] overflow-auto rounded-md border border-border bg-white md:block" data-grid>
     <table class="w-full border-collapse text-left tabular-nums">
-      <caption class="sr-only">Notas de Gemara do Shiur Alef</caption>
-      <thead class="bg-surface">
+      <caption class="sr-only">Notas de Gemara do Shiur Alef no 1º trimestre</caption>
+      <thead>
         <tr>
-          <th scope="col" class="sticky left-0 z-10 bg-surface px-4 py-3 text-sm font-semibold text-gray">Aluno</th>
+          <th scope="col" class="sticky top-0 left-0 z-20 border-b border-border bg-surface px-4 py-3 text-sm font-semibold text-gray">Aluno</th>
           {% for a in d.ASSESSMENTS %}
-          {% set ns = namespace(missing=0) %}
-          {% for s in d.STUDENTS %}{% if d.SCORES[(s.id, a.id)] is none %}{% set ns.missing = ns.missing + 1 %}{% endif %}{% endfor %}
-          <th scope="col" class="px-4 py-3 align-bottom" :class="col === {{ loop.index0 }} ? '' : 'max-md:hidden'">
-            <span class="flex items-center gap-1 font-semibold text-text">{{ a.name }}<button type="button" class="rounded-sm p-1 text-gray hover:text-primary" aria-label="Editar {{ a.name }}">{{ icon("pencil", "size-4") }}</button></span>
-            <span class="block text-sm font-normal text-gray">{{ a.date }}{% if a.max != d.SCALE_MAX %} · máx. {{ a.max|decimal }}{% endif %}</span>
-            <span class="mt-1 flex flex-wrap gap-1">
+          <th scope="col" class="sticky top-0 z-10 border-b border-border bg-surface px-4 py-3 align-bottom">
+            <span class="block font-semibold text-text">{{ a.name }}</span>
+            <span class="block text-sm font-normal text-gray">{{ a.date }}{% if a.max != d.SCALE_MAX %}, máx. {{ a.max|decimal }}{% endif %}</span>
+            <span class="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1">
               {% if a.in_report %}{{ status("primary", "No boletim") }}{% else %}{{ status("neutral", "Fora do boletim") }}{% endif %}
-              {% if ns.missing %}{{ status("warning", ns.missing ~ " sem nota") }}{% endif %}
+              <button type="button" class="min-h-9 text-sm font-medium text-primary hover:underline">Editar prova</button>
             </span>
           </th>
           {% endfor %}
@@ -66,67 +75,33 @@
         <tr class="border-t border-border">
           <th scope="row" class="sticky left-0 z-10 bg-white px-4 py-2 text-left font-medium whitespace-nowrap">{{ s.name }}</th>
           {% for a in d.ASSESSMENTS %}
-          {% set v = d.SCORES[(s.id, a.id)] %}
-          {% set shown = "Ausente" if v == "A" else ("Dispensado" if v == "D" else (v|decimal if v is not none else "")) %}
-          {% set pages = d.SCANS[a.id].get(s.id) %}
-          <td class="px-4 py-2" :class="col === {{ loop.index0 }} ? '' : 'max-md:hidden'">
-            <div class="group" data-state="">
-            <div class="flex items-center gap-2">
-              <input type="text" inputmode="decimal" autocomplete="off" spellcheck="false"
-                value="{{ shown }}" data-saved="{{ shown }}" data-row="{{ row }}" data-col="{{ loop.index0 }}" data-max="{{ a.max }}"
-                aria-label="{{ a.name }}, {{ s.name }}"
-                class="h-11 w-28 rounded-sm border border-border bg-white px-2 text-right text-base tabular-nums placeholder:text-gray/60 focus:border-primary group-data-[state=error]:border-danger group-data-[state=error]:bg-danger-light group-data-[state=saving]:border-primary"
-                placeholder="–">
-              <span class="hidden text-success group-data-[state=saved]:inline" title="Salvo">{{ icon("check", "size-5") }}</span>
-              <span class="hidden text-gray group-data-[state=saving]:inline" title="Salvando">{{ icon("loader-circle", "size-5 animate-spin") }}</span>
-              <a href="{{ url_for('prototype.scans') }}" class="ml-auto flex size-11 items-center justify-center rounded-sm {{ 'text-primary hover:bg-primary-light' if pages else 'text-gray/60 hover:bg-surface hover:text-gray' }}"
-                aria-label="{{ 'Ver scan (' ~ pages ~ ' pág.)' if pages else 'Enviar scan' }} de {{ s.name }}">
-                {{ icon("file-text" if pages else "camera", "size-5") }}
-              </a>
-            </div>
-            <p data-error class="mt-1 hidden max-w-48 text-sm text-danger group-data-[state=error]:block"></p>
-            </div>
-          </td>
+          <td class="px-4 py-2">{{ grade_cell(shown(d.SCORES[(s.id, a.id)]), row, loop.index0, a.max, a.name ~ ", " ~ s.name, scan_pages=d.SCANS[a.id].get(s.id), scan_href=url_for('prototype.scans')) }}</td>
           {% endfor %}
         </tr>
         {% endfor %}
       </tbody>
     </table>
   </div>
+</div>
 
-  <p class="flex flex-wrap items-center gap-4 text-sm text-gray">
-    <span class="flex items-center gap-1.5"><span class="text-primary">{{ icon("file-text", "size-4") }}</span>Tem scan</span>
-    <span class="flex items-center gap-1.5"><span class="text-gray/60">{{ icon("camera", "size-4") }}</span>Sem scan (toque para enviar)</span>
-  </p>
-</div>
-</div>
-{% from "components/forms.html" import text_input %}
-<dialog id="nova-prova" aria-labelledby="nova-prova-title"
-  class="m-auto w-[calc(100%-2rem)] max-w-md rounded-md border border-border bg-white p-0 text-text shadow-md">
-  <form method="dialog" class="grid gap-5 p-5 sm:p-6" x-data="{ name: '' }"
-    @submit="if ($event.submitter && $event.submitter.value === 'save') $dispatch('notify', {kind: 'success', message: (name || 'Prova') + ' criada no ' + term + 'º trimestre.'})">
-    <div class="flex items-start justify-between gap-3">
-      <div>
-        <h2 id="nova-prova-title" class="text-xl">Nova prova</h2>
-        <p class="mt-1 text-gray">Gemara · Shiur Alef</p>
-        <p class="mt-2 inline-flex items-center gap-1.5 rounded-sm bg-primary-light px-2 py-1 font-semibold text-primary-dark">{{ icon("calendar-check", "size-4") }}Vai para o <span x-text="term + 'º Trimestre'">1º Trimestre</span></p>
-      </div>
-      <button type="submit" value="cancel" formnovalidate class="-m-2 p-2 text-gray hover:text-text" aria-label="Fechar">{{ icon("x") }}</button>
-    </div>
-    {{ text_input("prova-nome", "Nome da prova", required=True, placeholder="Ex: Prova 3, Recuperação", attrs={"x-model": "name"}) }}
-    <div class="grid grid-cols-2 gap-5">
-      {{ text_input("prova-data", "Data", type="date", hint="Opcional.") }}
-      {{ text_input("prova-max", "Nota máxima", value="10", attrs={"inputmode": "decimal"}) }}
-    </div>
-    <label class="flex min-h-11 items-start gap-3">
-      <input type="checkbox" checked class="mt-0.5 size-5 accent-primary">
-      <span><span class="block font-medium">Aparece no boletim</span><span class="block text-sm text-gray">Desmarque para provas que são só para controle interno.</span></span>
-    </label>
-    <div class="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-      {{ button("Cancelar", variant="secondary", type="submit", attrs={"value": "cancel", "formnovalidate": true}) }}
-      {{ button("Criar prova", type="submit", icon_name="check", attrs={"value": "save"}) }}
-    </div>
-  </form>
-</dialog>
+{% call modal("nova-prova", "Criar prova", "Gemara, Shiur Alef") %}
+<form method="dialog" class="grid gap-5" x-data="{ name: '' }"
+  @submit="if ($event.submitter && $event.submitter.value === 'save') $dispatch('notify', {kind: 'success', message: (name || 'Prova') + ' criada no ' + term + 'º trimestre.'})">
+  <p class="justify-self-start rounded-sm bg-primary-light px-3 py-1.5 font-medium text-primary-dark">Vai para o <span x-text="term + 'º trimestre'">1º trimestre</span></p>
+  {{ text_input("prova-nome", "Nome da prova", required=True, placeholder="Ex: Prova 3", attrs={"x-model": "name"}) }}
+  <div class="grid grid-cols-2 gap-5">
+    {{ text_input("prova-data", "Data", type="date", hint="Opcional.") }}
+    {{ text_input("prova-max", "Nota máxima", value="10", attrs={"inputmode": "decimal"}) }}
+  </div>
+  <label class="flex min-h-11 items-start gap-3">
+    <input type="checkbox" checked class="mt-0.5 size-5 accent-primary">
+    <span><span class="block font-medium">Aparece no boletim</span><span class="block text-sm text-gray">Desmarque para provas só de controle interno.</span></span>
+  </label>
+  <div class="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+    {{ button("Cancelar", variant="secondary", type="submit", attrs={"value": "cancel", "formnovalidate": true}) }}
+    {{ button("Criar prova", type="submit", attrs={"value": "save"}) }}
+  </div>
+</form>
+{% endcall %}
 </div>
 {% endblock %}

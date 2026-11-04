@@ -2,6 +2,12 @@
 //
 // Cada campo de nota tem: data-row, data-col, data-max. O estado visual fica em
 // data-state no elemento pai (.group): "" | "saving" | "saved" | "error".
+// A navegação acontece dentro do [data-grid] mais próximo (a tabela do computador
+// e a lista do celular são grades separadas).
+//
+// Teclas: Enter e seta para baixo descem; seta para cima sobe; Tab vai para a direita
+// (no fim da linha, para a primeira nota da linha de baixo); Shift+Tab volta; setas para
+// os lados mudam de coluna quando o cursor está na ponta do texto.
 //
 // Opções do componente:
 //   saveUrl: URL para salvar (POST). Sem saveUrl (protótipo), o salvamento é simulado.
@@ -47,21 +53,37 @@
         return "Todas as notas estão salvas";
       },
 
-      cell(row, col) {
-        return this.$el.querySelector(`[data-row="${row}"][data-col="${col}"]`);
+      cell(grid, row, col) {
+        return grid.querySelector(`[data-row="${row}"][data-col="${col}"]`);
+      },
+
+      lastCol(grid, row) {
+        const cells = grid.querySelectorAll(`[data-row="${row}"]`);
+        return cells.length - 1;
       },
 
       onKeydown(event) {
         const input = event.target;
         if (!input.matches("[data-row]")) return;
+        const grid = input.closest("[data-grid]") || this.$el;
         const row = Number(input.dataset.row);
         const col = Number(input.dataset.col);
+        const atStart = input.selectionStart === 0 && input.selectionEnd === 0;
+        const atEnd = input.selectionStart === input.value.length;
+        const allSelected = input.selectionStart === 0 && input.selectionEnd === input.value.length;
         let next = null;
-        if (event.key === "Enter" || event.key === "ArrowDown") next = this.cell(row + 1, col);
-        else if (event.key === "ArrowUp") next = this.cell(row - 1, col);
+        if (event.key === "Enter" || event.key === "ArrowDown") next = this.cell(grid, row + 1, col);
+        else if (event.key === "ArrowUp") next = this.cell(grid, row - 1, col);
+        else if (event.key === "Tab" && !event.shiftKey) {
+          next = this.cell(grid, row, col + 1) || this.cell(grid, row + 1, 0);
+        } else if (event.key === "Tab" && event.shiftKey) {
+          next = this.cell(grid, row, col - 1) || this.cell(grid, row - 1, this.lastCol(grid, row - 1));
+        } else if (event.key === "ArrowRight" && (atEnd || allSelected)) next = this.cell(grid, row, col + 1);
+        else if (event.key === "ArrowLeft" && (atStart || allSelected)) next = this.cell(grid, row, col - 1);
         else return;
+        if (!next && event.key === "Tab") return; // fim da grade: Tab segue normal
         event.preventDefault();
-        if (event.key === "Enter") this.commit(input);
+        if (event.key === "Enter" || event.key === "Tab") this.commit(input);
         if (next) next.focus();
         else if (event.key === "Enter") input.blur();
       },

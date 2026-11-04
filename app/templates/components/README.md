@@ -1,6 +1,6 @@
 # Componentes (macros Jinja)
 
-Toda tela usa estes componentes. Não criar estilos avulsos (CLAUDE.md).
+Toda tela usa estes componentes. Não criar estilos avulsos. Regras de design em `docs/DESIGN.md`.
 A galeria com todos eles fica em `/prototipo/componentes`.
 
 ## `ui.html`
@@ -13,7 +13,11 @@ A galeria com todos eles fica em `/prototipo/componentes`.
 | `alert(kind, message, title=None)` | Aviso em bloco. `kind`: success, warning, danger, info |
 | `card(title, subtitle, padded=True)` | Cartão. Conteúdo no `{% call %}` |
 | `page_header(title, subtitle, back_href, back_label)` | Título da página. Ações no `{% call %}` |
-| `empty_state(message, icon_name)` | Lista vazia. Ação opcional no `{% call %}` |
+| `empty_state(message)` | Estado vazio que convida a agir. Ação no `{% call %}` |
+| `tabs(model, items, label)` | Abas (ex: trimestres). `model` é a variável Alpine |
+| `pending_item(title, detail, action, href, kind)` | O que falta e o atalho para resolver |
+| `save_indicator(saved, saving, error)` | "Salvando / Salvo / Não foi possível salvar". Lê `pending` e `errors` do Alpine |
+| `modal(id, title, subtitle)` | Janela para formulário curto. Conteúdo no `{% call %}` |
 
 ## `forms.html`
 
@@ -23,7 +27,9 @@ A galeria com todos eles fica em `/prototipo/componentes`.
 | `select(name, label, options, selected, ...)` | `options`: lista de `(valor, rótulo)` |
 | `textarea(name, label, value, rows, maxlength, ...)` | Texto longo |
 | `wtf_field(field, hint, attrs)` | Campo de um formulário Flask-WTF, com o mesmo visual e o erro do validador |
+| `field(id, label, hint, error, required)` | Rótulo + campo (no `{% call %}`) + erro ou ajuda |
 | `csrf_field()` | Token CSRF para formulários feitos à mão |
+| `file_upload(id, label, again_label, accept, has_files)` | Envio com câmera no celular; precisa de `upload(files)` no Alpine |
 
 Rótulo sempre visível. Dica e erro embaixo do campo, ligados por `aria-describedby`.
 
@@ -47,10 +53,14 @@ destrutiva. Abrir com qualquer botão que tenha `attrs={"data-open-dialog": id}`
 - Erro de rede ou do servidor em qualquer requisição HTMX já vira aviso (`static/js/app.js`).
 - Mensagens do Flask (`flash(msg, "success")`) aparecem no topo da página.
 
+## `grade.html`
+
+`grade_cell(value, row, col, max, label, scan_pages, scan_href, wide)`: campo de nota com estado de salvamento e link de scan (fora da ordem do Tab).
+
 ## Grades de lançamento
 
-`static/js/grade-grid.js` (`x-data="gradeGrid({saveUrl})"`): Enter e setas descem e sobem,
-vírgula ou ponto, A/D, validação do máximo, salvamento por nota com estado em `data-state`
+`static/js/grade-grid.js` (`x-data="gradeGrid({saveUrl})"`): Enter desce, Tab vai para a direita,
+setas navegam, vírgula ou ponto, A/D, validação do máximo, salvamento por nota com estado em `data-state`
 (`saving`, `saved`, `error`). Ver `prototype/grades.html`.
 
 ## Regras

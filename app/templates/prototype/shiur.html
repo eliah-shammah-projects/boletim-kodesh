@@ -1,104 +1,93 @@
 {% extends "layouts/app.html" %}
-{% from "components/ui.html" import icon, button, status, page_header %}
+{% from "components/ui.html" import icon, button, status, page_header, empty_state, tabs, modal %}
+{% from "components/forms.html" import select %}
 {% block title %}{{ c.name }}{% endblock %}
 {% block content %}
-<div x-data="{ color: '{{ d.SHIUR_COLORS[c.color][1] }}' }">
-{% call page_header(c.name, c.level ~ " · " ~ d.RABBIS[c.rabbi] ~ " · " ~ d.STUDENTS|length ~ " alunos", back_href=url_for("prototype.index"), back_label="Shiurim", accent="color") %}
-  <button type="button" data-open-dialog="cor-shiur" class="inline-flex min-h-11 items-center gap-2 rounded-md border border-border bg-white px-4 font-medium text-primary-dark hover:bg-primary-light">
-    <span class="size-4 rounded-full" :style="'background:' + color"></span>Cor
+<div x-data="{ color: '{{ d.SHIUR_COLORS[c.color][1] }}', term: 1 }">
+{% call page_header(c.name, c.level ~ ", " ~ d.RABBIS[c.rabbi] ~ ", " ~ d.STUDENTS|length ~ " alunos", back_href=url_for("prototype.index"), back_label="Shiurim", accent="color") %}
+  <button type="button" data-open-dialog="cor-shiur" class="inline-flex min-h-11 items-center gap-2 rounded-md border border-border bg-white px-4 font-medium text-primary-dark transition-colors duration-150 hover:bg-primary-light">
+    <span class="size-4 rounded-full" :style="'background:' + color" aria-hidden="true"></span>Mudar cor
   </button>
-  {{ button("Exportar", variant="secondary", icon_name="upload", attrs={"data-open-dialog": "exportar-shiur"}) }}
+  {{ button("Exportar", variant="secondary", attrs={"data-open-dialog": "exportar-shiur"}) }}
   {{ button("Inserir aluno", icon_name="plus", attrs={"data-open-dialog": "inserir-aluno"}) }}
 {% endcall %}
 
-<div x-data="{ term: 1 }" class="mb-8">
-<div class="mb-4">{% include "prototype/_term_tabs.html" %}</div>
-{% for n in (2, 3) %}
-<div x-show="term === {{ n }}" x-cloak class="mb-2">
-  {% from "components/ui.html" import empty_state %}
-  {% call empty_state("O " ~ n ~ "º trimestre ainda não começou. As provas e notas deste trimestre aparecem aqui.", "calendar-check") %}{% endcall %}
-</div>
-{% endfor %}
-<div x-show="term === 1">
-<h2 class="mb-3 text-lg">Matérias</h2>
-<ul class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-  {% for s in d.SUBJECTS %}
-  <li>
-    <a href="{{ url_for('prototype.grades') }}" class="flex h-full flex-col gap-1 rounded-md border border-border bg-white p-4 shadow-sm hover:border-primary hover:bg-primary-light">
-      <span class="flex items-center justify-between gap-2">
-        <span class="font-semibold">{{ s.name }} <span class="font-normal text-gray" lang="he" dir="rtl">{{ s.hebrew }}</span></span>
-        <span class="text-gray">{{ icon("chevron-right", "size-4") }}</span>
-      </span>
-      <span class="text-sm text-gray">{{ d.RABBIS[s.teacher] }}</span>
-      <span class="mt-2 text-sm font-medium text-primary">{{ s.assessments }} {{ "prova" if s.assessments == 1 else "provas" }} · notas e scans</span>
-    </a>
-  </li>
-  {% endfor %}
-</ul>
-</div>
-</div>
+{# O que falta, primeiro. #}
+<p class="mb-6 font-medium text-warning-dark">{{ c.todo }}.</p>
 
-<div class="mb-3 flex flex-wrap items-center justify-between gap-3">
-  <h2 class="text-lg">Alunos</h2>
-  <div class="flex flex-wrap gap-2">
-    {{ button("Frequência", variant="secondary", size="sm", icon_name="calendar-check", href=url_for("prototype.attendance")) }}
-    {{ button("Boletins", variant="secondary", size="sm", icon_name="file-text", href=url_for("prototype.report")) }}
+<section class="mb-10" aria-labelledby="materias-title">
+  <div class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+    <h2 id="materias-title" class="text-lg">Matérias</h2>
+    {{ tabs("term", [(1, "1º trimestre"), (2, "2º trimestre"), (3, "3º trimestre")], "Trimestre") }}
   </div>
-</div>
-<ul class="overflow-hidden rounded-md border border-border bg-white shadow-sm">
-  {% for s in d.STUDENTS %}
-  <li class="border-t border-border first:border-t-0">
-    <a href="{{ url_for('prototype.student', student_id=s.id) }}" class="flex min-h-16 items-center gap-4 px-4 py-3 hover:bg-primary-light sm:px-6">
-      <span class="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary-light font-semibold text-primary-dark">{{ s.name[0] }}</span>
-      <span class="flex-1">
-        <span class="block font-semibold">{{ s.name }}{% if s.hebrew %} <span class="font-normal text-gray" lang="he" dir="rtl">{{ s.hebrew }}</span>{% endif %}</span>
-        <span class="block text-sm text-gray">Nº {{ s.id }} · {{ s.grade }} · Laica {{ s.secular }}</span>
-      </span>
-      <span class="text-gray">{{ icon("chevron-right") }}</span>
-    </a>
-  </li>
+  {% for n in (2, 3) %}
+  <div x-show="term === {{ n }}" x-cloak>
+    {{ empty_state("O " ~ n ~ "º trimestre ainda não começou. As provas e notas dele aparecem aqui.") }}
+  </div>
   {% endfor %}
-</ul>
+  <ul x-show="term === 1" class="divide-y divide-border overflow-hidden rounded-md border border-border bg-white">
+    {% for s in d.SUBJECTS %}
+    <li>
+      <a href="{{ url_for('prototype.grades') }}" class="grid gap-x-6 gap-y-1 px-5 py-4 transition-colors duration-150 hover:bg-surface sm:grid-cols-[minmax(0,14rem)_minmax(0,1fr)_auto] sm:items-center sm:px-6">
+        <span class="font-semibold">{{ s.name }} <span class="font-normal text-gray" lang="he" dir="rtl">{{ s.hebrew }}</span></span>
+        <span class="text-gray">{{ d.RABBIS[s.teacher] }}</span>
+        <span class="font-medium text-primary">{{ s.assessments }} {{ "prova" if s.assessments == 1 else "provas" }}</span>
+      </a>
+    </li>
+    {% endfor %}
+  </ul>
+</section>
 
-{% from "components/forms.html" import select %}
-<dialog id="exportar-shiur" aria-labelledby="exportar-shiur-title"
-  class="m-auto w-[calc(100%-2rem)] max-w-md rounded-md border border-border bg-white p-0 text-text shadow-md">
-  <form method="dialog" class="grid gap-4 p-5 sm:p-6">
-    <div class="flex items-start justify-between gap-3">
-      <div>
-        <h2 id="exportar-shiur-title" class="text-xl">Exportar · {{ c.name }}</h2>
-        <p class="mt-1 text-gray">Escolha o trimestre e o que baixar.</p>
-      </div>
-      <button type="submit" class="-m-2 p-2 text-gray hover:text-text" aria-label="Fechar">{{ icon("x") }}</button>
+<section aria-labelledby="alunos-title">
+  <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
+    <h2 id="alunos-title" class="text-lg">Alunos</h2>
+    <div class="flex flex-wrap gap-2">
+      {{ button("Lançar frequência", variant="secondary", size="sm", href=url_for("prototype.attendance")) }}
+      {{ button("Ver boletins", variant="secondary", size="sm", href=url_for("prototype.report")) }}
     </div>
-    {{ select("exportar-trimestre", "Trimestre", [("1", "1º Trimestre"), ("2", "2º Trimestre"), ("3", "3º Trimestre"), ("ano", "Ano inteiro (os 3 trimestres)")], selected="1") }}
-    {% for title, desc, ico in [
-      ("Notas (Excel)", "Todas as provas e notas do shiur.", "clipboard-list"),
-      ("Frequência (Excel)", "Aulas, faltas, atrasos e % de cada aluno.", "calendar-check"),
-      ("Boletins (PDF)", "Um PDF por aluno, num arquivo .zip.", "printer"),
-      ("Lista de alunos (Excel)", "Nomes, série e contato dos pais.", "users"),
+  </div>
+  <ul class="divide-y divide-border overflow-hidden rounded-md border border-border bg-white">
+    {% for s in d.STUDENTS %}
+    <li>
+      <a href="{{ url_for('prototype.student', student_id=s.id) }}" class="flex min-h-16 items-center gap-4 px-5 py-3 transition-colors duration-150 hover:bg-surface sm:px-6">
+        <span class="flex-1">
+          <span class="block font-semibold">{{ s.name }}{% if s.hebrew %} <span class="font-normal text-gray" lang="he" dir="rtl">{{ s.hebrew }}</span>{% endif %}</span>
+          <span class="block text-sm text-gray">Nº {{ s.id }}, turma laica {{ s.secular }}</span>
+        </span>
+        <span class="text-gray">{{ icon("chevron-right") }}</span>
+      </a>
+    </li>
+    {% endfor %}
+  </ul>
+</section>
+
+{% call modal("exportar-shiur", "Exportar " ~ c.name, "Escolha o trimestre e o que baixar.") %}
+<form method="dialog" class="grid gap-5">
+  {{ select("exportar-trimestre", "Trimestre", [("1", "1º trimestre"), ("2", "2º trimestre"), ("3", "3º trimestre"), ("ano", "Ano inteiro")], selected="1") }}
+  <div class="grid gap-2">
+    {% for title, desc in [
+      ("Baixar notas", "Excel com todas as provas e notas do shiur."),
+      ("Baixar frequência", "Excel com aulas, faltas, atrasos e presença de cada aluno."),
+      ("Baixar boletins", "Um PDF por aluno, num arquivo .zip."),
+      ("Baixar lista de alunos", "Excel com nomes, série e contato dos pais."),
     ] %}
     <button type="submit" value="{{ loop.index }}"
       @click="$dispatch('notify', {kind: 'info', message: 'No sistema de verdade, o arquivo baixaria agora.'})"
-      class="flex min-h-16 items-center gap-3 rounded-md border border-border p-4 text-left hover:border-primary hover:bg-primary-light">
-      <span class="text-primary">{{ icon(ico, "size-6") }}</span>
-      <span><span class="block font-semibold">{{ title }}</span><span class="block text-sm text-gray">{{ desc }}</span></span>
+      class="flex min-h-11 flex-col items-start rounded-md border border-border px-4 py-3 text-left transition-colors duration-150 hover:border-primary/50 hover:bg-primary-light">
+      <span class="font-medium text-primary-dark">{{ title }}</span>
+      <span class="text-sm text-gray">{{ desc }}</span>
     </button>
     {% endfor %}
-  </form>
-</dialog>
+  </div>
+</form>
+{% endcall %}
 
-<dialog id="cor-shiur" aria-labelledby="cor-shiur-title"
-  class="m-auto w-[calc(100%-2rem)] max-w-md rounded-md border border-border bg-white p-0 text-text shadow-md">
-  <form method="dialog" class="grid gap-5 p-5 sm:p-6" @submit="$dispatch('notify', {kind: 'success', message: 'Cor do {{ c.name }} salva.'})">
-    <div class="flex items-start justify-between gap-3">
-      <h2 id="cor-shiur-title" class="text-xl">Cor do {{ c.name }}</h2>
-    </div>
-    <p class="text-gray">Aparece nos cartões e nas telas do shiur, para reconhecer de longe.</p>
-    {% include "prototype/_color_picker.html" %}
-    <div class="flex justify-end">{{ button("Pronto", type="submit", icon_name="check") }}</div>
-  </form>
-</dialog>
+{% call modal("cor-shiur", "Cor do " ~ c.name, "Aparece na lista de shiurim e nas telas do shiur.") %}
+<form method="dialog" class="grid gap-6" @submit="$dispatch('notify', {kind: 'success', message: 'Cor do {{ c.name }} salva.'})">
+  {% include "prototype/_color_picker.html" %}
+  <div class="flex justify-end">{{ button("Salvar cor", type="submit") }}</div>
+</form>
+{% endcall %}
 
 {% set preset = c.slug %}
 {% include "prototype/_insert_student.html" %}

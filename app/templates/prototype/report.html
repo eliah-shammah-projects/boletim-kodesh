@@ -1,18 +1,18 @@
 {% extends "layouts/app.html" %}
 {% from "components/ui.html" import icon, button, alert, page_header %}
-{% block title %}Boletim · {{ d.REPORT.student.name }}{% endblock %}
+{% block title %}Boletim de {{ d.REPORT.student.name }}{% endblock %}
 {% block content %}
 {% set r = d.REPORT %}
 {% set st = r.student %}
 
 <div class="print:hidden">
   {% if review %}
-  {% call page_header("Revisão · Shiur Alef", "Confira os boletins antes de liberar. Depois de liberado, o shiur fica travado.", back_href=url_for("prototype.home_admin"), back_label="Início") %}
+  {% call page_header("Revisão do Shiur Alef", "Confira os boletins antes de liberar. Depois de liberados, o shiur fica travado.", back_href=url_for("prototype.index"), back_label="Shiurim") %}
     {{ button("Devolver para o rabino", variant="secondary", icon_name="chevron-left", attrs={"data-open-dialog": "devolver"}) }}
-    {{ button("Liberar boletins do shiur", icon_name="check", attrs={"data-open-dialog": "liberar"}) }}
+    {{ button("Liberar boletins", icon_name="check", attrs={"data-open-dialog": "liberar"}) }}
   {% endcall %}
   {% else %}
-  {% call page_header("Boletim", st.name ~ " · " ~ d.TERM["name"] ~ " " ~ d.YEAR, back_href=url_for("prototype.shiur"), back_label="Shiur Alef") %}
+  {% call page_header("Boletim de " ~ st.name, d.TERM["name"] ~ " de " ~ d.YEAR, back_href=url_for("prototype.shiur"), back_label="Shiur Alef") %}
     {{ button("Imprimir", variant="secondary", icon_name="printer", attrs={"onclick": "window.print()"}) }}
     {{ button("Baixar PDF", icon_name="file-text") }}
   {% endcall %}
@@ -29,9 +29,9 @@
 </div>
 
 {# Folha A4. No PDF de verdade (Fase 12) o mesmo layout é gerado pelo WeasyPrint. #}
-<article class="relative mx-auto max-w-[210mm] overflow-hidden bg-white p-6 shadow-md sm:p-12 print:max-w-none print:p-0 print:shadow-none" aria-label="Boletim">
+<article class="relative mx-auto max-w-[210mm] overflow-hidden border border-border bg-white p-6 sm:p-12 print:max-w-none print:border-0 print:p-0" aria-label="Boletim">
   <div class="pointer-events-none absolute inset-0 flex items-center justify-center" aria-hidden="true">
-    <span class="-rotate-30 font-heading text-6xl font-bold tracking-widest text-border/70 select-none sm:text-8xl">RASCUNHO</span>
+    <span class="watermark -rotate-30 font-heading font-bold text-border/70 select-none">Rascunho</span>
   </div>
 
   <div class="relative">
@@ -39,8 +39,8 @@
       <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Or Yossef Yeshiva College" class="h-16 w-auto sm:h-20">
       <div class="text-right">
         <p class="font-heading text-lg font-semibold text-primary-dark sm:text-xl">Yeshiva Or Yossef</p>
-        <p class="text-gray">Boletim de Kodesh</p>
-        <p class="font-semibold">{{ d.TERM["name"] }} · {{ d.YEAR }}</p>
+        <p class="text-gray">Boletim de kodesh</p>
+        <p class="font-semibold">{{ d.TERM["name"] }} de {{ d.YEAR }}</p>
       </div>
     </header>
 
@@ -51,7 +51,7 @@
       <div class="col-span-2 sm:col-span-4"><dt class="text-sm text-gray">Rabino da turma</dt><dd class="font-semibold">{{ d.RABBIS["levi"] }}</dd></div>
     </dl>
 
-    <h2 class="mt-8 mb-3 text-base tracking-wide uppercase">Notas</h2>
+    <h2 class="mt-8 mb-3 text-lg text-primary-dark">Notas</h2>
     <table class="w-full border-collapse text-left tabular-nums">
       <thead>
         <tr class="border-b border-border text-sm text-gray">
@@ -78,17 +78,16 @@
       </tbody>
     </table>
 
-    <h2 class="mt-8 mb-3 text-base tracking-wide uppercase">Frequência</h2>
+    <h2 class="mt-8 mb-3 text-lg text-primary-dark">Frequência</h2>
     {% set att = r.attendance %}
-    <dl class="grid grid-cols-2 gap-3 sm:grid-cols-4">
-      {% for label, value in [("Aulas dadas", att.held), ("Faltas", att.absences), ("Atrasos", att.lates), ("Presença", presence|percent)] %}
-      <div class="rounded-md bg-surface p-3"><dt class="text-sm text-gray">{{ label }}</dt><dd class="font-heading text-xl font-semibold tabular-nums">{{ value }}</dd></div>
-      {% endfor %}
-    </dl>
+    <table class="w-full tabular-nums">
+      <thead><tr class="border-b border-border text-left text-sm text-gray"><th class="py-2 font-semibold">Aulas dadas</th><th class="py-2 font-semibold">Faltas</th><th class="py-2 font-semibold">Atrasos</th><th class="py-2 text-right font-semibold">Presença</th></tr></thead>
+      <tbody><tr><td class="py-2">{{ att.held }}</td><td class="py-2">{{ att.absences }}</td><td class="py-2">{{ att.lates }}</td><td class="py-2 text-right font-semibold">{{ presence|percent }}</td></tr></tbody>
+    </table>
 
-    <h2 class="mt-8 mb-2 text-base tracking-wide uppercase">Comentário geral</h2>
+    <h2 class="mt-8 mb-2 text-lg text-primary-dark">Comentário geral</h2>
     <p class="leading-relaxed">{{ r.general }}</p>
-    <h2 class="mt-6 mb-2 text-base tracking-wide uppercase">Comportamento</h2>
+    <h2 class="mt-6 mb-2 text-lg text-primary-dark">Comportamento</h2>
     <p class="leading-relaxed">{{ r.behavior }}</p>
 
     <footer class="mt-14 flex justify-end">

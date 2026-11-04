@@ -1,27 +1,22 @@
 {# Janela "Inserir aluno". Abrir com data-open-dialog="inserir-aluno". `preset` = slug do shiur já escolhido. #}
-{% from "components/ui.html" import icon, button, alert %}
+{% from "components/ui.html" import button, alert, modal %}
 {% from "components/forms.html" import text_input, select %}
-<dialog id="inserir-aluno" aria-labelledby="inserir-aluno-title"
-  class="m-auto w-[calc(100%-2rem)] max-w-lg rounded-md border border-border bg-white p-0 text-text shadow-md">
-  <form method="dialog" class="grid gap-5 p-5 sm:p-6" x-data="{ name: '' }"
-    @submit="if ($event.submitter && $event.submitter.value === 'save') $dispatch('notify', {kind: 'success', message: (name || 'Aluno') + ' foi cadastrado.'})">
-    <div class="flex items-start justify-between gap-3">
-      <h2 id="inserir-aluno-title" class="text-xl">Inserir aluno</h2>
-      <button type="submit" value="cancel" formnovalidate class="-m-2 p-2 text-gray hover:text-text" aria-label="Fechar">{{ icon("x") }}</button>
-    </div>
-    {{ text_input("novo-nome", "Nome completo", required=True, placeholder="Nome e sobrenome", attrs={"x-model": "name"}) }}
-    <div x-show="name.trim().toLowerCase() === 'gabriel cohen'" x-cloak>
-      {{ alert("warning", "Já existe um aluno com este nome (Nº 1009, Shiur Alef). Confira se não é a mesma pessoa antes de cadastrar.", title="Nome igual") }}
-    </div>
-    {{ text_input("novo-hebraico", "Nome em hebraico", hint="Opcional.", attrs={"dir": "auto"}) }}
-    <div class="grid gap-5 sm:grid-cols-2">
-      {{ select("novo-serie", "Série", [("8", "8º ano"), ("9", "9º ano"), ("10", "1º colegial"), ("11", "2º colegial"), ("12", "3º colegial")], selected="10") }}
-      {{ text_input("novo-matricula", "Matrícula da secretaria", hint="Opcional.") }}
-    </div>
-    {{ select("novo-shiur", "Shiur", [("", "Sem shiur por enquanto")] + d.CLASS_OPTIONS, selected=preset|default(""), hint="Pode deixar sem shiur e escolher depois.") }}
-    <div class="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-      {{ button("Cancelar", variant="secondary", type="submit", attrs={"value": "cancel", "formnovalidate": true}) }}
-      {{ button("Cadastrar aluno", type="submit", icon_name="check", attrs={"value": "save"}) }}
-    </div>
-  </form>
-</dialog>
+{% call modal("inserir-aluno", "Inserir aluno") %}
+<form method="dialog" class="grid gap-5" x-data="{ name: '' }"
+  @submit="if ($event.submitter && $event.submitter.value === 'save') $dispatch('notify', {kind: 'success', message: (name || 'Aluno') + ' foi cadastrado.'})">
+  {{ text_input("novo-nome", "Nome completo", required=True, attrs={"x-model": "name", "autocomplete": "off"}) }}
+  <div x-show="name.trim().toLowerCase() === 'gabriel cohen'" x-cloak>
+    {{ alert("warning", "Já existe um Gabriel Cohen (nº 1009, no Shiur Alef). Confira se não é a mesma pessoa antes de cadastrar.", title="Nome igual a um aluno já cadastrado") }}
+  </div>
+  {{ text_input("novo-hebraico", "Nome em hebraico", hint="Opcional.", attrs={"dir": "auto", "lang": "he"}) }}
+  <div class="grid gap-5 sm:grid-cols-2">
+    {{ select("novo-serie", "Série", [("8", "8º ano"), ("9", "9º ano"), ("10", "1º colegial"), ("11", "2º colegial"), ("12", "3º colegial")], selected="10") }}
+    {{ text_input("novo-matricula", "Matrícula da secretaria", hint="Opcional.") }}
+  </div>
+  {{ select("novo-shiur", "Shiur", [("", "Sem shiur por enquanto")] + d.CLASS_OPTIONS, selected=preset|default(""), hint="Pode deixar sem shiur e escolher depois.") }}
+  <div class="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+    {{ button("Cancelar", variant="secondary", type="submit", attrs={"value": "cancel", "formnovalidate": true}) }}
+    {{ button("Cadastrar aluno", type="submit", attrs={"value": "save"}) }}
+  </div>
+</form>
+{% endcall %}

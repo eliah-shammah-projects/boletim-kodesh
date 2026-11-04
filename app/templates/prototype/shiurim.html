@@ -1,48 +1,32 @@
 {% extends "layouts/app.html" %}
-{% from "components/ui.html" import icon, button, status, page_header %}
+{% from "components/ui.html" import icon, button, status, page_header, modal %}
+{% from "components/forms.html" import select %}
 {% block title %}Shiurim{% endblock %}
 {% block content %}
-{% call page_header("Shiurim", d.YEAR ~ " · " ~ d.TERM["name"]) %}
-  {{ button("Exportar", variant="secondary", icon_name="upload", attrs={"data-open-dialog": "exportar"}) }}
-  {{ button("Inserir aluno", variant="secondary", icon_name="user", attrs={"data-open-dialog": "inserir-aluno"}) }}
+{% call page_header("Shiurim", d.TERM["name"] ~ " de " ~ d.YEAR) %}
+  {{ button("Exportar", variant="secondary", attrs={"data-open-dialog": "exportar"}) }}
+  {{ button("Inserir aluno", variant="secondary", attrs={"data-open-dialog": "inserir-aluno"}) }}
   {{ button("Criar shiur", icon_name="plus", href=url_for("prototype.create_shiur")) }}
 {% endcall %}
 
-<ul class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+{#
+  Lista, não cartões: cada linha mostra primeiro o que falta no shiur.
+  A fita colorida à esquerda é a cor que o rabino escolheu.
+#}
+<ul class="divide-y divide-border overflow-hidden rounded-md border border-border bg-white">
   {% for c in d.CLASSES %}
   {% set kind, label = d.STATUS_LABELS[c.status] %}
-  {% set rabbi = d.RABBIS[c.rabbi] %}
-  {% set rp = rabbi.split() %}
   <li>
     <a href="{{ url_for('prototype.shiur', slug=c.slug) }}"
-      class="group relative flex h-full flex-col overflow-hidden rounded-md border border-border/70 bg-white p-6 pt-7 shadow-sm transition hover:border-primary/40 hover:shadow-md">
-      <span class="absolute inset-x-0 top-0 h-1.5" style="background: {{ d.SHIUR_COLORS[c.color][1] }}" aria-hidden="true"></span>
-      <div class="flex items-start justify-between gap-3">
-        <div>
-          <p class="text-sm font-medium text-gray">{{ c.level }}</p>
-          <p class="mt-1 font-heading text-xl font-semibold text-text group-hover:text-primary">{{ c.name }}</p>
-        </div>
-        {{ status(kind, label) }}
-      </div>
-
-      <div class="mt-5 flex items-center gap-3">
-        <span class="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary-light text-sm font-semibold text-primary-dark">{{ rp[-2][:1] }}{{ rp[-1][:1] }}</span>
-        <span class="leading-tight"><span class="block font-medium">{{ rabbi }}</span><span class="block text-sm text-gray">Rabino da turma</span></span>
-      </div>
-
-      <div class="mt-auto pt-6">
-        <div class="flex items-baseline justify-between text-sm">
-          <span class="text-gray">Notas lançadas</span>
-          <span class="font-semibold tabular-nums">{{ c.grades_done }}%</span>
-        </div>
-        <div class="mt-2 h-1.5 overflow-hidden rounded-full bg-surface" role="progressbar" aria-valuenow="{{ c.grades_done }}" aria-valuemin="0" aria-valuemax="100" aria-label="Notas lançadas">
-          <div class="h-full rounded-full {{ 'bg-success' if c.grades_done == 100 else 'bg-primary' }}" style="width: {{ c.grades_done }}%"></div>
-        </div>
-        <p class="mt-4 flex items-center justify-between border-t border-border/70 pt-4 text-sm text-gray">
-          <span class="flex items-center gap-1.5">{{ icon("users", "size-4") }}{{ c.students }} alunos</span>
-          <span class="flex items-center gap-1 font-medium text-primary">Abrir {{ icon("chevron-right", "size-4") }}</span>
-        </p>
-      </div>
+      class="relative grid gap-x-6 gap-y-2 py-4 pr-4 pl-6 transition-colors duration-150 hover:bg-surface sm:pr-6 md:grid-cols-[minmax(0,15rem)_minmax(0,1fr)_auto_auto] md:items-center">
+      <span class="absolute inset-y-0 left-0 w-1.5" style="background: {{ d.SHIUR_COLORS[c.color][1] }}" aria-hidden="true"></span>
+      <span>
+        <span class="block font-heading text-lg font-semibold text-text">{{ c.name }}</span>
+        <span class="block text-sm text-gray">{{ c.level }}, {{ d.RABBIS[c.rabbi] }}</span>
+      </span>
+      <span class="{{ 'font-medium text-warning-dark' if c.status == 'open' else 'text-gray' }}">{{ c.todo }}</span>
+      <span>{{ status(kind, label) }}</span>
+      <span class="hidden text-gray md:block">{{ icon("chevron-right") }}</span>
     </a>
   </li>
   {% endfor %}
@@ -51,28 +35,23 @@
 {% set preset = "" %}
 {% include "prototype/_insert_student.html" %}
 
-<dialog id="exportar" aria-labelledby="exportar-title"
-  class="m-auto w-[calc(100%-2rem)] max-w-md rounded-md border border-border bg-white p-0 text-text shadow-md">
-  <form method="dialog" class="grid gap-4 p-5 sm:p-6">
-    <div class="flex items-start justify-between gap-3">
-      <div>
-        <h2 id="exportar-title" class="text-xl">Exportar</h2>
-        <p class="mt-1 text-gray">De todos os shiurim de {{ d.YEAR }}.</p>
-      </div>
-      <button type="submit" class="-m-2 p-2 text-gray hover:text-text" aria-label="Fechar">{{ icon("x") }}</button>
-    </div>
-    {% for title, desc, ico in [
-      ("Planilha de alunos (Excel)", "Todos os alunos, com shiur, série e contato dos pais.", "file-text"),
-      ("Notas de todos (Excel)", "Todas as provas e notas do trimestre.", "clipboard-list"),
-      ("Boletins de todos (PDF)", "Um PDF por aluno, num arquivo .zip.", "printer"),
+{% call modal("exportar", "Exportar", "Todos os shiurim de " ~ d.YEAR ~ ".") %}
+<form method="dialog" class="grid gap-5">
+  {{ select("exportar-tudo-trimestre", "Trimestre", [("1", "1º trimestre"), ("2", "2º trimestre"), ("3", "3º trimestre"), ("ano", "Ano inteiro")], selected="1") }}
+  <div class="grid gap-2">
+    {% for title, desc in [
+      ("Baixar planilha de alunos", "Excel com todos os alunos, shiur, série e contato dos pais."),
+      ("Baixar notas", "Excel com todas as provas e notas."),
+      ("Baixar boletins", "Um PDF por aluno, num arquivo .zip."),
     ] %}
     <button type="submit" value="{{ loop.index }}"
       @click="$dispatch('notify', {kind: 'info', message: 'No sistema de verdade, o arquivo baixaria agora.'})"
-      class="flex min-h-16 items-center gap-3 rounded-md border border-border p-4 text-left hover:border-primary hover:bg-primary-light">
-      <span class="text-primary">{{ icon(ico, "size-6") }}</span>
-      <span><span class="block font-semibold">{{ title }}</span><span class="block text-sm text-gray">{{ desc }}</span></span>
+      class="flex min-h-11 flex-col items-start rounded-md border border-border px-4 py-3 text-left transition-colors duration-150 hover:border-primary/50 hover:bg-primary-light">
+      <span class="font-medium text-primary-dark">{{ title }}</span>
+      <span class="text-sm text-gray">{{ desc }}</span>
     </button>
     {% endfor %}
-  </form>
-</dialog>
+  </div>
+</form>
+{% endcall %}
 {% endblock %}

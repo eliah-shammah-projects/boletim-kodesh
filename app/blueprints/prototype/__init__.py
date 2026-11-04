@@ -16,7 +16,6 @@ def _nav(persona: str, active: str) -> list[dict]:
     items = [
         ("shiurim", "Shiurim", "users", "prototype.index"),
         ("alunos", "Alunos", "user", "prototype.students"),
-        ("config", "Ajustes", "settings", "prototype.components"),
     ]
     return [
         {"label": label, "icon": ico, "href": url_for(endpoint), "active": key == active}
@@ -45,11 +44,6 @@ def _percent(held: int, absences: int) -> Decimal:
 def index():
     """Primeira tela: os shiurim do ano, criar shiur, inserir aluno e exportar."""
     return _page("shiurim.html", active="shiurim")
-
-
-@bp.get("/telas")
-def screens():
-    return _page("index.html", active="")
 
 
 @bp.get("/alunos")
@@ -81,16 +75,6 @@ def student(student_id: int):
 @bp.get("/componentes")
 def components():
     return _page("components.html", persona="admin", active="config")
-
-
-@bp.get("/inicio/rabino")
-def home_rabbi():
-    return _page("home_rabbi.html", active="")
-
-
-@bp.get("/inicio/direcao")
-def home_admin():
-    return _page("home_admin.html", persona="admin", active="")
 
 
 @bp.get("/shiur", defaults={"slug": "alef"})

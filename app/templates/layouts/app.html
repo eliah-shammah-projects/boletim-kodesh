@@ -20,7 +20,7 @@
     </nav>
     {% if user_name is defined %}
     <div class="flex items-center gap-2">
-      <span class="hidden items-center gap-2 text-sm text-gray sm:flex"><span class="flex size-8 items-center justify-center rounded-full bg-primary-light text-xs font-semibold text-primary-dark">{% set parts = user_name.split() %}{{ (parts[-2][:1] if parts|length > 1 else "") ~ parts[-1][:1] }}</span>{{ user_name }}</span>
+      <span class="hidden text-sm text-gray sm:inline">{{ user_name }}</span>
       <a href="#" class="flex min-h-11 items-center gap-1.5 rounded-md px-3 text-sm text-gray hover:bg-surface hover:text-text">{{ icon("log-out", "size-4") }}Sair</a>
     </div>
     {% endif %}
@@ -44,7 +44,7 @@
   <ul class="grid grid-cols-{{ nav|length }}">
     {% for item in nav %}
     <li>
-      <a href="{{ item.href }}" class="flex min-h-16 flex-col items-center justify-center gap-1 text-xs font-medium {{ 'text-primary' if item.active else 'text-gray' }}"{% if item.active %} aria-current="page"{% endif %}>
+      <a href="{{ item.href }}" class="flex min-h-16 flex-col items-center justify-center gap-1 text-sm font-medium {{ 'text-primary' if item.active else 'text-gray' }}"{% if item.active %} aria-current="page"{% endif %}>
         {{ icon(item.icon, "size-6") }}{{ item.label }}
       </a>
     </li>

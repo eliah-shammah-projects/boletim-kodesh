@@ -1,90 +1,116 @@
 {% extends "layouts/app.html" %}
-{% from "components/ui.html" import icon, button, status, alert, card, page_header, empty_state %}
-{% from "components/forms.html" import text_input, select, textarea %}
+{% from "components/ui.html" import icon, button, status, alert, card, page_header, empty_state, tabs, pending_item, save_indicator, modal %}
+{% from "components/forms.html" import text_input, select, textarea, file_upload %}
 {% from "components/table.html" import data_table %}
 {% from "components/dialog.html" import confirm_dialog %}
+{% from "components/grade.html" import grade_cell %}
 {% block title %}Componentes{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='js/grade-grid.js') }}" defer></script>{% endblock %}
 {% block content %}
-{% call page_header("Componentes", "As peças que todas as telas usam.", back_href=url_for("prototype.index"), back_label="Protótipo") %}
-  {{ button("Ação secundária", variant="secondary") }}
-  {{ button("Ação principal", icon_name="plus") }}
-{% endcall %}
+{{ page_header("Componentes", "As peças que todas as telas usam. Regras em docs/DESIGN.md.", back_href=url_for("prototype.index"), back_label="Shiurim") }}
 
 <div class="grid gap-6">
-  {% call card("Cores", "Tiradas do logo. O azul é só para o que importa.") %}
+  {% call card("Cores") %}
   <div class="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-6">
     {% for name, cls in [("primary", "bg-primary"), ("primary-dark", "bg-primary-dark"), ("primary-light", "bg-primary-light"), ("gray", "bg-gray"), ("text", "bg-text"), ("border", "bg-border"), ("surface", "bg-surface"), ("success", "bg-success"), ("warning", "bg-warning"), ("danger", "bg-danger")] %}
     <div>
-      <div class="h-14 rounded-md border border-border {{ cls }}"></div>
+      <div class="h-12 rounded-md border border-border {{ cls }}"></div>
       <p class="mt-1 text-sm text-gray">{{ name }}</p>
     </div>
     {% endfor %}
   </div>
   {% endcall %}
 
-  {% call card("Tipografia") %}
-  <h1 class="text-3xl">Título em Montserrat</h1>
-  <h2 class="mt-3 text-xl">Subtítulo · Gemara גמרא</h2>
-  <p class="mt-3 max-w-prose">Texto em IBM Plex Sans. Ação, atenção, Conceição. Nomes em hebraico usam a IBM Plex Sans Hebrew: שָׁלוֹם עֲלֵיכֶם, בבא מציעא.</p>
-  <p class="mt-2 text-sm text-gray">Texto secundário, para rótulos e explicações.</p>
-  <p class="mt-3 tabular-nums">Números alinhados: 10 · 9,5 · 6,6 · 18/20</p>
+  {% call card("Tipografia", "Cinco tamanhos no app inteiro.") %}
+  <p class="text-2xl font-heading font-semibold">Título da página</p>
+  <p class="mt-2 text-xl font-heading font-semibold">Título de janela</p>
+  <p class="mt-2 text-lg font-heading font-semibold">Título de seção, Gemara <span lang="he" dir="rtl">גמרא</span></p>
+  <p class="mt-2 max-w-prose">Texto do corpo em IBM Plex Sans, 16px. Ação, atenção, Conceição. Hebraico com a IBM Plex Sans Hebrew: <span lang="he" dir="rtl">שָׁלוֹם עֲלֵיכֶם</span>.</p>
+  <p class="mt-2 text-sm text-gray">Texto secundário e rótulos, 14px.</p>
   {% endcall %}
 
-  {% call card("Botões", "Grandes (44px), fáceis de tocar no celular.") %}
+  {% call card("Botões", "Uma ação principal por seção. Todos com 44px de altura.") %}
   <div class="flex flex-wrap gap-3">
-    {{ button("Salvar", icon_name="check") }}
+    {{ button("Salvar notas") }}
     {{ button("Cancelar", variant="secondary") }}
-    {{ button("Ver boletim", variant="ghost", icon_name="eye") }}
-    {{ button("Apagar prova", variant="danger", icon_name="trash-2", attrs={"data-open-dialog": "demo-apagar"}) }}
-    {{ button("Desativado", attrs={"disabled": true}) }}
+    {{ button("Ver boletim", variant="ghost") }}
+    {{ button("Apagar prova", variant="danger", attrs={"data-open-dialog": "demo-apagar"}) }}
   </div>
-  {{ confirm_dialog("demo-apagar", "Apagar a Prova 1?", "A prova e as notas dela serão apagadas. Esta ação não pode ser desfeita.", "Apagar prova") }}
+  {{ confirm_dialog("demo-apagar", "Apagar a Prova 1?", "A prova e as notas dela serão apagadas. Não dá para desfazer.", "Apagar prova") }}
   {% endcall %}
 
-  {% call card("Status", "Sempre com ícone e texto, nunca só a cor.") %}
+  {% call card("Abas") %}
+  <div x-data="{ term: 1 }">{{ tabs("term", [(1, "1º trimestre"), (2, "2º trimestre"), (3, "3º trimestre")], "Trimestre") }}</div>
+  {% endcall %}
+
+  {% call card("Status", "Sempre com ícone e texto.") %}
   <div class="flex flex-wrap gap-2">
     {{ status("success", "Liberado") }}
     {{ status("primary", "Pronto para revisão") }}
     {{ status("warning", "Em lançamento") }}
     {{ status("danger", "Atrasado") }}
-    {{ status("neutral", "Sem provas") }}
+    {{ status("neutral", "Fora do boletim") }}
   </div>
+  {% endcall %}
+
+  {% call card("Pendências") %}
+  <ul class="divide-y divide-border">
+    {{ pending_item("Faltam 3 notas na Prova 2 de Gemara", "Shiur Alef", "Lançar notas", url_for("prototype.grades")) }}
+    {{ pending_item("Faltam 5 scans da Prova 1", "Shiur Alef", "Enviar scans", url_for("prototype.scans")) }}
+    {{ pending_item("Frequência do 1º trimestre lançada", "Shiur Alef", kind="success") }}
+  </ul>
   {% endcall %}
 
   {% call card("Avisos") %}
   <div class="grid gap-3">
     {{ alert("success", "As notas da Prova 1 foram salvas.") }}
-    {{ alert("warning", "Faltam 2 alunos sem nota na Prova 2.", title="Quase lá") }}
-    {{ alert("danger", "A nota precisa ser entre 0 e 10.", title="Não foi possível salvar") }}
+    {{ alert("warning", "Faltam 2 alunos sem nota na Prova 2.") }}
+    {{ alert("danger", "A nota precisa estar entre 0 e 10.") }}
     {{ alert("info", "O trimestre termina em 12 dias.") }}
   </div>
   <div class="mt-4 flex flex-wrap gap-3">
-    {{ button("Mostrar aviso rápido", variant="secondary", attrs={"x-data": "", "@click": "$dispatch('notify', {kind: 'success', message: 'Salvo'})"}) }}
-    {{ button("Mostrar erro rápido", variant="secondary", attrs={"x-data": "", "@click": "$dispatch('notify', {kind: 'danger', message: 'Sem conexão. Tente de novo.'})"}) }}
+    {{ button("Mostrar aviso de salvo", variant="secondary", attrs={"x-data": "", "@click": "$dispatch('notify', {kind: 'success', message: 'Notas salvas.'})"}) }}
+    {{ button("Mostrar aviso de erro", variant="secondary", attrs={"x-data": "", "@click": "$dispatch('notify', {kind: 'danger', message: 'Sem conexão. Verifique a internet e tente de novo.'})"}) }}
+  </div>
+  {% endcall %}
+
+  {% call card("Campo de nota e indicador de salvamento") %}
+  <div x-data="gradeGrid()" class="grid gap-4">
+    {{ save_indicator(saved="Todas as notas salvas") }}
+    <div class="flex flex-wrap gap-6" data-grid>
+      <div><p class="mb-1 text-sm text-gray">Digite 9,5 e Enter</p>{{ grade_cell("", 0, 0, 10, "Exemplo 1") }}</div>
+      <div><p class="mb-1 text-sm text-gray">Digite 12 e Enter</p>{{ grade_cell("", 0, 1, 10, "Exemplo 2", scan_pages=2, scan_href="#") }}</div>
+    </div>
   </div>
   {% endcall %}
 
   {% call card("Formulário") %}
-  <form class="grid max-w-xl gap-5" x-data @submit.prevent="$dispatch('notify', {kind: 'success', message: 'Salvo'})">
-    {{ text_input("nome", "Nome do aluno", required=True, placeholder="Nome e sobrenome") }}
-    {{ text_input("hebraico", "Nome em hebraico", hint="Opcional.", attrs={"dir": "auto"}) }}
-    {{ text_input("nota", "Nota", value="11", error="A nota precisa ser entre 0 e 10.", attrs={"inputmode": "decimal"}) }}
+  <form class="grid max-w-xl gap-5" x-data @submit.prevent="$dispatch('notify', {kind: 'success', message: 'Aluno cadastrado.'})">
+    {{ text_input("nome", "Nome do aluno", required=True) }}
+    {{ text_input("hebraico", "Nome em hebraico", hint="Opcional.", attrs={"dir": "auto", "lang": "he"}) }}
+    {{ text_input("nota", "Nota", value="11", error="A nota precisa estar entre 0 e 10.", attrs={"inputmode": "decimal"}) }}
     {{ select("shiur", "Shiur", [("", "Sem shiur por enquanto"), ("alef", "Shiur Alef"), ("bet", "Shiur Bet")]) }}
     {{ textarea("comentario", "Comentário geral", hint="Aparece no boletim. Até 600 caracteres.", maxlength=600) }}
-    <div class="flex gap-3">{{ button("Salvar", type="submit", icon_name="check") }}{{ button("Cancelar", variant="secondary") }}</div>
+    <div class="flex gap-3">{{ button("Cadastrar aluno", type="submit") }}{{ button("Cancelar", variant="secondary") }}</div>
   </form>
   {% endcall %}
 
+  {% call card("Envio de scan") %}
+  <div x-data="{ pages: 0, upload(files) { this.pages += files.length; $dispatch('notify', {kind: 'success', message: 'Scan enviado.'}) } }" class="flex">
+    {{ file_upload("demo-upload", has_files="pages > 0") }}
+  </div>
+  {% endcall %}
+
   {% call card("Tabela") %}
-  {% call data_table(["Aluno", "Shiur", ("Nota", "right"), "Situação"]) %}
-    <tr><td>Ariel Szwarc</td><td>Shiur Alef</td><td class="text-right">9,5</td><td>{{ status("success", "Com scan") }}</td></tr>
-    <tr><td>Daniel Abramovich</td><td>Shiur Alef</td><td class="text-right">10</td><td>{{ status("success", "Com scan") }}</td></tr>
-    <tr><td>David Zaguri</td><td>Shiur Alef</td><td class="text-right">6,6</td><td>{{ status("warning", "Sem scan") }}</td></tr>
+  {% call data_table(["Aluno", "Shiur", ("Nota", "right")]) %}
+    <tr><td>Ariel Szwarc</td><td>Shiur Alef</td><td class="text-right">9,5</td></tr>
+    <tr><td>Daniel Abramovich</td><td>Shiur Alef</td><td class="text-right">10</td></tr>
+    <tr><td>David Zaguri</td><td>Shiur Alef</td><td class="text-right">6,6</td></tr>
   {% endcall %}
   {% endcall %}
 
   {% call card("Vazio") %}
-  {% call empty_state("Nenhuma prova criada neste trimestre.", "clipboard-list") %}{{ button("Criar prova", icon_name="plus") }}{% endcall %}
+  {% call empty_state("Nenhuma prova neste trimestre.") %}{{ button("Criar prova", icon_name="plus") }}{% endcall %}
   {% endcall %}
 </div>
 {% endblock %}

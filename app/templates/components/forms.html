@@ -1,12 +1,13 @@
 {#
   Campos de formulário. Rótulo sempre visível, dica e erro embaixo do campo.
-    {% from "components/forms.html" import text_input, select, textarea, wtf_field, csrf_field %}
+    {% from "components/forms.html" import field, text_input, select, textarea, wtf_field, csrf_field, file_upload %}
 #}
 {% from "components/ui.html" import icon %}
 
 {% set input_cls = "block w-full min-h-11 rounded-md border bg-white px-3 text-base text-text placeholder:text-gray/70 focus:outline-2 focus:outline-primary focus:border-primary" %}
 
-{% macro _wrap(id, label, hint=None, error=None, required=False) -%}
+{# Rótulo acima do campo, dica ou erro embaixo. O campo vem no {% call %}. #}
+{% macro field(id, label, hint=None, error=None, required=False) -%}
 <div class="flex flex-col gap-1.5">
   <label for="{{ id }}" class="font-medium">{{ label }}{% if required %} <span class="text-danger" aria-hidden="true">*</span>{% endif %}</label>
   {{ caller() }}
@@ -24,7 +25,7 @@
 
 {% macro text_input(name, label, value="", type="text", hint=None, error=None, required=False, placeholder=None, id=None, attrs={}) -%}
 {%- set id = id or name -%}
-{% call _wrap(id, label, hint, error, required) %}
+{% call field(id, label, hint, error, required) %}
 <input id="{{ id }}" name="{{ name }}" type="{{ type }}" value="{{ value }}"
   class="{{ input_cls }} {{ 'border-danger' if error else 'border-border' }}"
   {%- if placeholder %} placeholder="{{ placeholder }}"{% endif %}
@@ -35,7 +36,7 @@
 {# options: lista de (valor, rótulo) #}
 {% macro select(name, label, options, selected=None, hint=None, error=None, required=False, id=None, attrs={}) -%}
 {%- set id = id or name -%}
-{% call _wrap(id, label, hint, error, required) %}
+{% call field(id, label, hint, error, required) %}
 <div class="relative">
   <select id="{{ id }}" name="{{ name }}" class="{{ input_cls }} appearance-none pr-10 {{ 'border-danger' if error else 'border-border' }}"
     {%- if required %} required{% endif %}{{ _describedby(id, hint, error) }}{{ attrs|xmlattr }}>
@@ -50,7 +51,7 @@
 
 {% macro textarea(name, label, value="", rows=4, hint=None, error=None, required=False, maxlength=None, id=None, attrs={}) -%}
 {%- set id = id or name -%}
-{% call _wrap(id, label, hint, error, required) %}
+{% call field(id, label, hint, error, required) %}
 <textarea id="{{ id }}" name="{{ name }}" rows="{{ rows }}"
   class="{{ input_cls }} py-2 {{ 'border-danger' if error else 'border-border' }}"
   {%- if maxlength %} maxlength="{{ maxlength }}"{% endif %}
@@ -59,16 +60,31 @@
 {%- endmacro %}
 
 {# Campo de um formulário Flask-WTF, com o mesmo visual. #}
-{% macro wtf_field(field, hint=None, attrs={}) -%}
-{%- set error = field.errors[0] if field.errors else None -%}
-{%- set extra = {"class": input_cls ~ (" py-2" if field.type == "TextAreaField" else "") ~ (" border-danger" if error else " border-border")} -%}
-{%- if error %}{% set _ = extra.update({"aria-invalid": "true", "aria-describedby": field.id ~ "-error"}) %}{% elif hint %}{% set _ = extra.update({"aria-describedby": field.id ~ "-hint"}) %}{% endif -%}
+{% macro wtf_field(f, hint=None, attrs={}) -%}
+{%- set error = f.errors[0] if f.errors else None -%}
+{%- set extra = {"class": input_cls ~ (" py-2" if f.type == "TextAreaField" else "") ~ (" border-danger" if error else " border-border")} -%}
+{%- if error %}{% set _ = extra.update({"aria-invalid": "true", "aria-describedby": f.id ~ "-error"}) %}{% elif hint %}{% set _ = extra.update({"aria-describedby": f.id ~ "-hint"}) %}{% endif -%}
 {%- set _ = extra.update(attrs) -%}
-{% call _wrap(field.id, field.label.text, hint, error, field.flags.required) %}
-{{ field(**extra) }}
+{% call field(f.id, f.label.text, hint, error, f.flags.required) %}
+{{ f(**extra) }}
 {% endcall %}
 {%- endmacro %}
 
 {% macro csrf_field() -%}
 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+{%- endmacro %}
+
+
+{#
+  Envio de arquivo com câmera no celular. Toque no botão -> câmera -> confirmar -> envia sozinho.
+  Precisa de um x-data com `upload(files)` em volta (ex: o componente de scan).
+  `accept` padrão: fotos e PDF.
+#}
+{% macro file_upload(id, label="Fotografar", again_label="Adicionar página", accept="image/*,application/pdf", has_files="false") -%}
+<label for="{{ id }}" class="inline-flex min-h-11 flex-1 cursor-pointer items-center justify-center gap-2 rounded-md px-4 font-medium transition-colors duration-150 sm:flex-none"
+  :class="{{ has_files }} ? 'border border-border bg-white text-primary-dark hover:bg-primary-light' : 'bg-primary text-white hover:bg-primary-dark'">
+  {{ icon("camera") }}<span x-text="{{ has_files }} ? '{{ again_label }}' : '{{ label }}'">{{ label }}</span>
+</label>
+<input id="{{ id }}" type="file" accept="{{ accept }}" capture="environment" multiple class="sr-only"
+  @change="upload($event.target.files); $event.target.value = ''">
 {%- endmacro %}

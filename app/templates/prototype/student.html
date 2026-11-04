@@ -1,105 +1,96 @@
 {% extends "layouts/app.html" %}
-{% from "components/ui.html" import icon, button, status, card, page_header %}
+{% from "components/ui.html" import icon, button, status, card, page_header, empty_state, tabs %}
 {% block title %}{{ st.name }}{% endblock %}
 {% block content %}
 {% set last = st.name.split()[-1] %}
-{% call page_header(st.name, "Nº " ~ st.id ~ " · " ~ st.grade ~ " · Shiur Alef", back_href=url_for("prototype.shiur", slug="alef"), back_label="Shiur Alef") %}
-  {{ button("Editar dados", variant="secondary", icon_name="pencil") }}
+{% set color = d.SHIUR_COLORS[d.CLASSES[0].color][1] %}
+<div x-data="{ term: 1 }">
+{% call page_header(st.name, "Nº " ~ st.id ~ ", " ~ st.grade ~ ", Shiur Alef", back_href=url_for("prototype.shiur", slug="alef"), back_label="Shiur Alef") %}
+  {{ button("Editar dados", variant="secondary") }}
+  <span x-show="term === 1">{{ button("Ver boletim do 1º trimestre", href=url_for("prototype.report")) }}</span>
 {% endcall %}
 
+<div class="mb-6">{{ tabs("term", [(1, "1º trimestre"), (2, "2º trimestre"), (3, "3º trimestre")], "Trimestre") }}</div>
+
 <div class="grid gap-6 lg:grid-cols-3">
-  <div class="grid content-start gap-6">
-    {% call card("Dados do aluno") %}
-    <dl class="grid gap-3">
-      {% for label, value in [
-        ("Nome em hebraico", st.hebrew or "—"),
-        ("Série", st.grade),
-        ("Shiur", "Shiur Alef · " ~ d.RABBIS["levi"]),
-        ("Turma laica", st.secular),
-        ("Matrícula da secretaria", "—"),
-      ] %}
-      <div><dt class="text-sm text-gray">{{ label }}</dt><dd class="font-medium">{% if loop.first and st.hebrew %}<span lang="he" dir="rtl">{{ value }}</span>{% elif label == "Shiur" %}<span class="inline-flex items-center gap-2"><span class="size-3 rounded-full" style="background: {{ d.SHIUR_COLORS[d.CLASSES[0].color][1] }}"></span>{{ value }}</span>{% else %}{{ value }}{% endif %}</dd></div>
-      {% endfor %}
-    </dl>
-    {% endcall %}
-
-    {% call card("Pais", "Recebem o boletim por email") %}
-    <dl class="grid gap-3">
-      <div><dt class="text-sm text-gray">Responsável</dt><dd class="font-medium">Família {{ last }}</dd></div>
-      <div><dt class="text-sm text-gray">Telefone</dt><dd class="font-medium tabular-nums">(11) 9{{ st.id }}-{{ "%04d"|format(st.id * 7 % 10000) }}</dd></div>
-      <div><dt class="text-sm text-gray">Emails</dt><dd class="font-medium break-all">{{ last|lower }}@email.com</dd></div>
-    </dl>
-    {% endcall %}
-  </div>
-
-  <div class="grid content-start gap-6 lg:col-span-2" x-data="{ term: 1 }">
-    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-      <div class="grid grid-cols-3 gap-1 rounded-md border border-border bg-white p-1" role="tablist" aria-label="Trimestre">
-        {% for n in (1, 2, 3) %}
-        <button type="button" role="tab" @click="term = {{ n }}" :aria-selected="term === {{ n }}"
-          class="min-h-11 rounded-sm px-4 font-medium whitespace-nowrap"
-          :class="term === {{ n }} ? 'bg-primary text-white' : 'text-text hover:bg-primary-light'">{{ n }}º Trimestre</button>
-        {% endfor %}
-      </div>
-      <div x-show="term === 1">{{ button("Ver boletim do 1º trimestre", icon_name="file-text", href=url_for("prototype.report")) }}</div>
-    </div>
-
+  <div class="grid min-w-0 content-start gap-6 lg:col-span-2">
     {% for n in (2, 3) %}
     <div x-show="term === {{ n }}" x-cloak>
-      {% from "components/ui.html" import empty_state %}
-      {{ empty_state("O " ~ n ~ "º trimestre ainda não começou. As notas, a frequência e os comentários aparecem aqui quando forem lançados.", "calendar-check") }}
+      {{ empty_state("O " ~ n ~ "º trimestre ainda não começou. As notas, a frequência e os comentários dele aparecem aqui.") }}
     </div>
     {% endfor %}
 
     <div x-show="term === 1" class="grid content-start gap-6">
-    {% call card("Notas", padded=False) %}
-    <ul>
-      <li class="border-t border-border px-5 py-3 first:border-t-0 sm:px-6">
-        <p class="font-semibold">Gemara <span class="text-sm font-normal text-gray">· {{ d.RABBIS["levi"] }}</span></p>
-        <ul class="mt-2 grid gap-1">
-          {% for name, v, max, in_report in gemara %}
-          <li class="flex items-center justify-between gap-3">
-            <span>{{ name }}{% if not in_report %} <span class="text-sm text-gray">(fora do boletim)</span>{% endif %}</span>
-            <span class="font-semibold tabular-nums">{% if v == "A" %}Ausente{% elif v == "D" %}Dispensado{% elif v is none %}<span class="text-warning-dark">Sem nota</span>{% else %}{{ format_score(v, max, d.SCALE_MAX) }}{% endif %}</span>
-          </li>
-          {% endfor %}
-        </ul>
-      </li>
-      {% for subj in d.REPORT.subjects[1:] %}
-      <li class="border-t border-border px-5 py-3 sm:px-6">
-        <p class="font-semibold">{{ subj.name }} <span class="text-sm font-normal text-gray">· {{ d.RABBIS[subj.teacher] }}</span></p>
-        <ul class="mt-2 grid gap-1">
-          {% for name, score, max in subj.scores %}
-          <li class="flex items-center justify-between gap-3"><span>{{ name }}</span><span class="font-semibold tabular-nums">{{ format_score(score, max, d.SCALE_MAX) }}</span></li>
-          {% endfor %}
-        </ul>
-      </li>
-      {% endfor %}
-    </ul>
-    {% endcall %}
+      {% if st.id != d.REPORT.student.id %}
+      {{ status("warning", "Faltam os comentários do boletim") }}
+      {% endif %}
 
-    {% call card("Frequência") %}
-    <dl class="grid grid-cols-2 gap-3 sm:grid-cols-4">
-      {% for label, value in [("Aulas dadas", d.CLASSES_HELD), ("Faltas", absences), ("Atrasos", lates), ("Presença", presence|percent)] %}
-      <div class="rounded-md bg-surface p-3"><dt class="text-sm text-gray">{{ label }}</dt><dd class="font-heading text-xl font-semibold tabular-nums">{{ value }}</dd></div>
-      {% endfor %}
+      {% call card("Notas", padded=False) %}
+      <div class="divide-y divide-border px-5 sm:px-6">
+        <div class="py-4">
+          <h3 class="font-semibold">Gemara <span class="font-normal text-gray">com {{ d.RABBIS["levi"] }}</span></h3>
+          <table class="mt-2 w-full tabular-nums">
+            {% for name, v, max, in_report in gemara %}
+            <tr>
+              <td class="py-1">{{ name }}{% if not in_report %} <span class="text-sm text-gray">(fora do boletim)</span>{% endif %}</td>
+              <td class="py-1 text-right font-semibold">{% if v == "A" %}Ausente{% elif v == "D" %}Dispensado{% elif v is none %}<span class="text-warning-dark">Sem nota</span>{% else %}{{ format_score(v, max, d.SCALE_MAX) }}{% endif %}</td>
+            </tr>
+            {% endfor %}
+          </table>
+        </div>
+        {% for subj in d.REPORT.subjects[1:] %}
+        <div class="py-4">
+          <h3 class="font-semibold">{{ subj.name }} <span class="font-normal text-gray">com {{ d.RABBIS[subj.teacher] }}</span></h3>
+          <table class="mt-2 w-full tabular-nums">
+            {% for name, score, max in subj.scores %}
+            <tr><td class="py-1">{{ name }}</td><td class="py-1 text-right font-semibold">{{ format_score(score, max, d.SCALE_MAX) }}</td></tr>
+            {% endfor %}
+          </table>
+        </div>
+        {% endfor %}
+      </div>
+      {% endcall %}
+
+      {% call card("Frequência") %}
+      <table class="w-full tabular-nums">
+        <thead><tr class="text-left text-sm text-gray"><th class="pb-2 font-medium">Aulas dadas</th><th class="pb-2 font-medium">Faltas</th><th class="pb-2 font-medium">Atrasos</th><th class="pb-2 text-right font-medium">Presença</th></tr></thead>
+        <tbody><tr class="text-lg"><td>{{ d.CLASSES_HELD }}</td><td>{{ absences }}</td><td>{{ lates }}</td><td class="text-right font-semibold">{{ presence|percent }}</td></tr></tbody>
+      </table>
+      {% endcall %}
+
+      {% call card("Comentários do boletim", "Escritos pelo rabino da turma.") %}
+      {% if st.id == d.REPORT.student.id %}
+      <h3 class="text-sm font-semibold text-gray">Geral</h3>
+      <p class="mt-1">{{ d.REPORT.general }}</p>
+      <h3 class="mt-4 text-sm font-semibold text-gray">Comportamento</h3>
+      <p class="mt-1">{{ d.REPORT.behavior }}</p>
+      {% else %}
+      <p class="text-gray">Ainda não escritos.</p>
+      <div class="mt-3">{{ button("Escrever comentários", variant="secondary") }}</div>
+      {% endif %}
+      {% endcall %}
+    </div>
+  </div>
+
+  <div class="grid content-start gap-6">
+    {% call card("Dados do aluno") %}
+    <dl class="grid gap-3">
+      <div><dt class="text-sm text-gray">Nome em hebraico</dt><dd class="font-medium">{% if st.hebrew %}<span lang="he" dir="rtl">{{ st.hebrew }}</span>{% else %}Não informado{% endif %}</dd></div>
+      <div><dt class="text-sm text-gray">Série</dt><dd class="font-medium">{{ st.grade }}</dd></div>
+      <div><dt class="text-sm text-gray">Shiur</dt><dd class="flex items-center gap-2 font-medium"><span class="size-3 rounded-full" style="background: {{ color }}" aria-hidden="true"></span>Shiur Alef, {{ d.RABBIS["levi"] }}</dd></div>
+      <div><dt class="text-sm text-gray">Turma laica</dt><dd class="font-medium">{{ st.secular }}</dd></div>
+      <div><dt class="text-sm text-gray">Matrícula da secretaria</dt><dd class="font-medium">Não informada</dd></div>
     </dl>
     {% endcall %}
 
-    {% call card("Comentários do boletim", "Escritos pelo rabino da turma") %}
-    {% if st.id == d.REPORT.student.id %}
-    <h3 class="text-sm font-semibold text-gray">Geral</h3>
-    <p class="mt-1">{{ d.REPORT.general }}</p>
-    <h3 class="mt-4 text-sm font-semibold text-gray">Comportamento</h3>
-    <p class="mt-1">{{ d.REPORT.behavior }}</p>
-    {% else %}
-    <div class="flex flex-col items-start gap-3">
-      {{ status("warning", "Ainda não escritos") }}
-      {{ button("Escrever comentários", variant="secondary", icon_name="pencil") }}
-    </div>
-    {% endif %}
+    {% call card("Pais", "Recebem o boletim por email.") %}
+    <dl class="grid gap-3">
+      <div><dt class="text-sm text-gray">Responsável</dt><dd class="font-medium">Família {{ last }}</dd></div>
+      <div><dt class="text-sm text-gray">Telefone</dt><dd class="font-medium tabular-nums">(11) 9{{ st.id }}-{{ "%04d"|format(st.id * 7 % 10000) }}</dd></div>
+      <div><dt class="text-sm text-gray">Email</dt><dd class="font-medium break-all">{{ last|lower }}@email.com</dd></div>
+    </dl>
     {% endcall %}
-      </div>
   </div>
+</div>
 </div>
 {% endblock %}

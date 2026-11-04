@@ -1,5 +1,5 @@
 /*
- * Identidade visual (PLAN.md, seção 6b).
+ * Identidade visual: docs/DESIGN.md (e PLAN.md, seção 6b).
  * As cores padrão do Tailwind são desligadas: só existem os tokens abaixo.
  * Nada de estilo avulso nos templates: usar as macros de templates/components/.
  */
@@ -69,9 +69,9 @@
   --color-transparent: transparent;
   --color-current: currentColor;
 
-  --color-primary: #005a93;
-  --color-primary-dark: #004874;
-  --color-primary-light: #e6eff5;
+  --color-primary: #005a8e;
+  --color-primary-dark: #00466f;
+  --color-primary-light: #e6f0f6;
   --color-gray: #6e6e6e;
   --color-text: #1f2933;
   --color-border: #dde3e8;
@@ -88,6 +88,19 @@
   --font-*: initial;
   --font-heading: "Montserrat", "IBM Plex Sans Hebrew", system-ui, sans-serif;
   --font-sans: "IBM Plex Sans", "IBM Plex Sans Hebrew", system-ui, sans-serif;
+
+  /* No máximo 5 tamanhos de fonte (docs/DESIGN.md). Nada abaixo de 14px. */
+  --text-*: initial;
+  --text-sm: 0.875rem;
+  --text-sm--line-height: 1.35rem;
+  --text-base: 1rem;
+  --text-base--line-height: 1.5rem;
+  --text-lg: 1.125rem;
+  --text-lg--line-height: 1.6rem;
+  --text-xl: 1.375rem;
+  --text-xl--line-height: 1.8rem;
+  --text-2xl: 1.875rem;
+  --text-2xl--line-height: 2.25rem;
 
   --radius-*: initial;
   --radius-sm: 4px;
@@ -131,7 +144,24 @@
   [x-cloak] {
     display: none !important;
   }
+  /* Nada se mexe para quem pediu menos movimento. */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
   dialog::backdrop {
     background: rgb(31 41 51 / 0.4);
+  }
+}
+
+/* Marca d'água do rascunho do boletim. Única exceção à escala de 5 tamanhos: não é texto de leitura. */
+@layer components {
+  .watermark {
+    font-size: clamp(3rem, 12vw, 6rem);
   }
 }

@@ -5,14 +5,11 @@ from app import create_app
 PAGES = [
     "/prototipo/",
     "/prototipo/componentes",
-    "/prototipo/telas",
     "/prototipo/alunos",
     "/prototipo/aluno/1012",
     "/prototipo/aluno/1021",
     "/prototipo/shiur/bet",
     "/prototipo/criar-shiur",
-    "/prototipo/inicio/rabino",
-    "/prototipo/inicio/direcao",
     "/prototipo/shiur",
     "/prototipo/notas",
     "/prototipo/scans",
@@ -48,7 +45,7 @@ def test_report_never_shows_scans_or_internal_notes():
 def test_report_shows_own_max_when_different_from_scale():
     html = create_app("testing").test_client().get("/prototipo/boletim").get_data(as_text=True)
     assert "18/20" in html
-    assert "RASCUNHO" in html
+    assert "Rascunho" in html
 
 
 def test_review_mode_has_release_and_return_with_confirmation():

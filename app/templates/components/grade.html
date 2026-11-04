@@ -1,0 +1,32 @@
+{#
+  Célula de nota da grade de lançamento (usa static/js/grade-grid.js).
+  - value: texto como foi dado ("9,5", "Ausente", "")
+  - row, col: posição na grade (data-row, data-col), para Enter, Tab e setas
+  - label: rótulo acessível ("Prova 1, Ariel Szwarc")
+  - scan_pages / scan_href: mostra "Ver scan" ou "Enviar scan" ao lado (fora da ordem do Tab)
+  - wide: no celular o campo ocupa a linha toda
+  Estado visual em data-state: "" | "saving" | "saved" | "error".
+#}
+{% from "components/ui.html" import icon %}
+
+{% macro grade_cell(value, row, col, max, label, scan_pages=None, scan_href=None, wide=False) -%}
+<div class="group" data-state="">
+  <div class="flex items-center gap-2">
+    <input type="text" inputmode="decimal" autocomplete="off" spellcheck="false"
+      value="{{ value }}" data-saved="{{ value }}" data-row="{{ row }}" data-col="{{ col }}" data-max="{{ max }}"
+      aria-label="{{ label }}" placeholder="–"
+      class="h-11 {{ 'w-full' if wide else 'w-28' }} rounded-sm border border-border bg-white px-2 text-right text-base tabular-nums placeholder:text-gray/60 focus:border-primary group-data-[state=error]:border-danger group-data-[state=error]:bg-danger-light group-data-[state=saving]:border-primary">
+    <span class="w-5">
+      <span class="hidden text-success group-data-[state=saved]:inline" title="Salvo">{{ icon("check", "size-5") }}</span>
+      <span class="hidden text-gray group-data-[state=saving]:inline" title="Salvando">{{ icon("loader-circle", "size-5 animate-spin") }}</span>
+    </span>
+    {% if scan_href %}
+    <a href="{{ scan_href }}" tabindex="-1"
+      class="inline-flex min-h-11 items-center gap-1.5 rounded-sm px-2 text-sm font-medium whitespace-nowrap {{ 'text-primary hover:bg-primary-light' if scan_pages else 'text-gray hover:bg-surface hover:text-text' }}">
+      {{ icon("file-text" if scan_pages else "camera", "size-4") }}{{ "Ver scan" if scan_pages else "Enviar scan" }}
+    </a>
+    {% endif %}
+  </div>
+  <p data-error class="mt-1 hidden max-w-56 text-sm text-danger group-data-[state=error]:block"></p>
+</div>
+{%- endmacro %}
