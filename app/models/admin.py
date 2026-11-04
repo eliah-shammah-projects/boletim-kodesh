@@ -94,7 +94,10 @@ class AuditLog(Base):
         MYSQL_TABLE_OPTIONS,
     )
 
-    id: Mapped[int] = mapped_column(sa.BigInteger, primary_key=True)
+    # BigInteger no MySQL; Integer no SQLite (banco temporário), que só numera Integer sozinho.
+    id: Mapped[int] = mapped_column(
+        sa.BigInteger().with_variant(sa.Integer(), "sqlite"), primary_key=True
+    )
     user_id: Mapped[int | None] = user_fk()
     action: Mapped[str] = mapped_column(sa.String(40))  # create | update | delete | ...
     entity_type: Mapped[str] = mapped_column(sa.String(60))

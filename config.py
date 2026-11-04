@@ -30,11 +30,13 @@ class Config:
     MAX_CONTENT_LENGTH = 25 * 1024 * 1024
     # Protótipo navegável com dados fictícios (Fase 1). Desligado em produção, salvo se pedido.
     PROTOTYPE_ENABLED = os.environ.get("PROTOTYPE_ENABLED") == "1"
+    SEED_ALLOWED = False  # `flask seed`: só em desenvolvimento e testes
 
 
 class DevelopmentConfig(Config):
     DEBUG = True
     PROTOTYPE_ENABLED = True
+    SEED_ALLOWED = True
     SECRET_KEY = os.environ.get("SECRET_KEY", "dev-only-insecure-key")
     SQLALCHEMY_DATABASE_URI = normalize_db_url(
         os.environ.get("DATABASE_URL", "mysql+pymysql://boletim:boletim@127.0.0.1:3306/boletim")
@@ -44,6 +46,7 @@ class DevelopmentConfig(Config):
 class TestingConfig(Config):
     TESTING = True
     PROTOTYPE_ENABLED = True
+    SEED_ALLOWED = True
     SECRET_KEY = "test-only-key"
     SQLALCHEMY_DATABASE_URI = normalize_db_url(
         os.environ.get(

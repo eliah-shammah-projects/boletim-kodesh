@@ -92,7 +92,7 @@ def upgrade():
     mysql_engine='InnoDB'
     )
     op.create_table('audit_log',
-    sa.Column('id', sa.BigInteger(), nullable=False),
+    sa.Column('id', sa.BigInteger().with_variant(sa.Integer(), 'sqlite'), nullable=False),
     sa.Column('user_id', sa.Integer(), nullable=True),
     sa.Column('action', sa.String(length=40), nullable=False),
     sa.Column('entity_type', sa.String(length=60), nullable=False),
