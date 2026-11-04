@@ -18,7 +18,7 @@
         ("Turma laica", st.secular),
         ("Matrícula da secretaria", "—"),
       ] %}
-      <div><dt class="text-sm text-gray">{{ label }}</dt><dd class="font-medium"{% if loop.first and st.hebrew %} lang="he" dir="rtl"{% endif %}>{{ value }}</dd></div>
+      <div><dt class="text-sm text-gray">{{ label }}</dt><dd class="font-medium">{% if loop.first and st.hebrew %}<span lang="he" dir="rtl">{{ value }}</span>{% else %}{{ value }}{% endif %}</dd></div>
       {% endfor %}
     </dl>
     {% endcall %}
@@ -54,7 +54,7 @@
     <div x-show="term === 1" class="grid content-start gap-6">
     {% call card("Notas", padded=False) %}
     <ul>
-      <li class="border-t border-border px-4 py-3 first:border-t-0 sm:px-5">
+      <li class="border-t border-border px-5 py-3 first:border-t-0 sm:px-6">
         <p class="font-semibold">Gemara <span class="text-sm font-normal text-gray">· {{ d.RABBIS["levi"] }}</span></p>
         <ul class="mt-2 grid gap-1">
           {% for name, v, max, in_report in gemara %}
@@ -66,7 +66,7 @@
         </ul>
       </li>
       {% for subj in d.REPORT.subjects[1:] %}
-      <li class="border-t border-border px-4 py-3 sm:px-5">
+      <li class="border-t border-border px-5 py-3 sm:px-6">
         <p class="font-semibold">{{ subj.name }} <span class="text-sm font-normal text-gray">· {{ d.RABBIS[subj.teacher] }}</span></p>
         <ul class="mt-2 grid gap-1">
           {% for name, score, max in subj.scores %}

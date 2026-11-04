@@ -8,23 +8,39 @@
   {{ button("Criar shiur", icon_name="plus", href=url_for("prototype.create_shiur")) }}
 {% endcall %}
 
-<ul class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+<ul class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
   {% for c in d.CLASSES %}
   {% set kind, label = d.STATUS_LABELS[c.status] %}
+  {% set rabbi = d.RABBIS[c.rabbi] %}
+  {% set rp = rabbi.split() %}
   <li>
     <a href="{{ url_for('prototype.shiur', slug=c.slug) }}"
-      class="flex h-full flex-col gap-3 rounded-md border border-border bg-white p-5 shadow-sm transition-colors hover:border-primary hover:bg-primary-light">
+      class="group flex h-full flex-col rounded-md border border-border/70 bg-white p-6 shadow-sm transition hover:border-primary/40 hover:shadow-md">
       <div class="flex items-start justify-between gap-3">
         <div>
-          <p class="font-heading text-lg font-semibold text-primary-dark">{{ c.name }}</p>
-          <p class="text-sm text-gray">{{ c.level }}</p>
+          <p class="text-sm font-medium text-gray">{{ c.level }}</p>
+          <p class="mt-1 font-heading text-xl font-semibold text-text group-hover:text-primary">{{ c.name }}</p>
         </div>
-        <span class="text-gray">{{ icon("chevron-right") }}</span>
-      </div>
-      <p class="flex items-center gap-2">{{ icon("user", "size-4 text-gray") }}{{ d.RABBIS[c.rabbi] }}</p>
-      <div class="mt-auto flex items-center justify-between gap-2">
-        <span class="text-sm text-gray tabular-nums">{{ c.students }} alunos</span>
         {{ status(kind, label) }}
+      </div>
+
+      <div class="mt-5 flex items-center gap-3">
+        <span class="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary-light text-sm font-semibold text-primary-dark">{{ rp[-2][:1] }}{{ rp[-1][:1] }}</span>
+        <span class="leading-tight"><span class="block font-medium">{{ rabbi }}</span><span class="block text-sm text-gray">Rabino da turma</span></span>
+      </div>
+
+      <div class="mt-auto pt-6">
+        <div class="flex items-baseline justify-between text-sm">
+          <span class="text-gray">Notas lançadas</span>
+          <span class="font-semibold tabular-nums">{{ c.grades_done }}%</span>
+        </div>
+        <div class="mt-2 h-1.5 overflow-hidden rounded-full bg-surface" role="progressbar" aria-valuenow="{{ c.grades_done }}" aria-valuemin="0" aria-valuemax="100" aria-label="Notas lançadas">
+          <div class="h-full rounded-full {{ 'bg-success' if c.grades_done == 100 else 'bg-primary' }}" style="width: {{ c.grades_done }}%"></div>
+        </div>
+        <p class="mt-4 flex items-center justify-between border-t border-border/70 pt-4 text-sm text-gray">
+          <span class="flex items-center gap-1.5">{{ icon("users", "size-4") }}{{ c.students }} alunos</span>
+          <span class="flex items-center gap-1 font-medium text-primary">Abrir {{ icon("chevron-right", "size-4") }}</span>
+        </p>
       </div>
     </a>
   </li>

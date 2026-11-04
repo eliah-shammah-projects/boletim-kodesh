@@ -69,14 +69,14 @@
 
 {# Cartão. Uso: {% call card("Título") %} conteúdo {% endcall %} #}
 {% macro card(title=None, subtitle=None, padded=True) -%}
-<section class="min-w-0 rounded-md border border-border bg-white shadow-sm">
+<section class="min-w-0 rounded-md border border-border/70 bg-white shadow-sm">
   {% if title %}
-  <header class="border-b border-border px-4 py-3 sm:px-5">
+  <header class="px-5 pt-5 {{ 'pb-1' if padded else 'pb-4' }} sm:px-6 sm:pt-6">
     <h2 class="text-lg">{{ title }}</h2>
-    {% if subtitle %}<p class="text-sm text-gray">{{ subtitle }}</p>{% endif %}
+    {% if subtitle %}<p class="mt-0.5 text-sm text-gray">{{ subtitle }}</p>{% endif %}
   </header>
   {% endif %}
-  <div class="{{ 'p-4 sm:p-5' if padded else '' }}">{{ caller() }}</div>
+  <div class="{{ 'p-5 sm:p-6' if padded else '' }}{{ ' pt-3 sm:pt-4' if padded and title else '' }}">{{ caller() }}</div>
 </section>
 {%- endmacro %}
 
@@ -86,14 +86,14 @@
   Ações à direita: {% call page_header("Título") %} botões {% endcall %}
 #}
 {% macro page_header(title, subtitle=None, back_href=None, back_label="Voltar") -%}
-<div class="mb-6">
+<div class="mb-8">
   {% if back_href %}
-  <a href="{{ back_href }}" class="mb-2 inline-flex min-h-11 items-center gap-1 text-primary hover:text-primary-dark">{{ icon("chevron-left", "size-4") }}{{ back_label }}</a>
+  <a href="{{ back_href }}" class="-ml-1 mb-1 inline-flex min-h-11 items-center gap-1 text-sm font-medium text-gray hover:text-primary">{{ icon("chevron-left", "size-4") }}{{ back_label }}</a>
   {% endif %}
   <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
     <div>
-      <h1 class="text-2xl sm:text-3xl">{{ title }}</h1>
-      {% if subtitle %}<p class="mt-1 text-gray">{{ subtitle }}</p>{% endif %}
+      <h1 class="text-2xl sm:text-[2rem] sm:leading-tight">{{ title }}</h1>
+      {% if subtitle %}<p class="mt-2 text-gray">{{ subtitle }}</p>{% endif %}
     </div>
     {% if caller is defined %}<div class="flex flex-wrap gap-2">{{ caller() }}</div>{% endif %}
   </div>
