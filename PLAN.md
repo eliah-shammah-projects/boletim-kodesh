@@ -37,7 +37,7 @@ Além disso:
 | UX/UI | Prioridade. Sistema visual e protótipo das telas principais antes de codar as telas |
 | Visual | Azul do logo Or Yossef (#005A93) e branco. Moderno e sóbrio, sem cara de template genérico: sem gradientes, sem emojis, sem enfeites. Paleta e tipografia na seção 6b |
 | Usuários | Rabinos usam celular e computador, com familiaridade média com tecnologia |
-| Tela inicial | Lista de pendências de cada usuário, com atalho direto para resolver cada uma |
+| Tela inicial | Lista de shiurim do ano, com os botões Criar shiur, Inserir aluno e Exportar (de todos). Shiur -> matérias (provas, notas e scans) e alunos -> página de cada aluno com todas as informações. As pendências ficam numa tela à parte (Fase 14b), não na tela inicial (decidido na revisão do protótipo) |
 | Períodos | Trimestres, criados por ano letivo (padrão 3, editável) |
 | Escala | Definida por ano, padrão 0 a 10. Notas com até 1 casa decimal. Cada prova pode ter nota máxima própria |
 | Notas | Várias provas por matéria no trimestre. Não existe nota final manual |

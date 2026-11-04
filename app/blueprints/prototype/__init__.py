@@ -5,7 +5,7 @@ Só é registrado com PROTOTYPE_ENABLED (ligado em desenvolvimento e testes).
 
 from decimal import ROUND_HALF_UP, Decimal
 
-from flask import Blueprint, render_template, request, url_for
+from flask import Blueprint, abort, render_template, request, url_for
 
 from app.blueprints.prototype import data
 
@@ -13,19 +13,11 @@ bp = Blueprint("prototype", __name__, url_prefix="/prototipo")
 
 
 def _nav(persona: str, active: str) -> list[dict]:
-    if persona == "admin":
-        items = [
-            ("inicio", "Início", "house", "prototype.home_admin"),
-            ("shiurim", "Shiurim", "users", "prototype.shiur"),
-            ("alunos", "Alunos", "user", "prototype.index"),
-            ("config", "Ajustes", "settings", "prototype.components"),
-        ]
-    else:
-        items = [
-            ("inicio", "Início", "house", "prototype.home_rabbi"),
-            ("shiurim", "Meus shiurim", "users", "prototype.shiur"),
-            ("notas", "Notas", "clipboard-list", "prototype.grades"),
-        ]
+    items = [
+        ("shiurim", "Shiurim", "users", "prototype.index"),
+        ("alunos", "Alunos", "user", "prototype.students"),
+        ("config", "Ajustes", "settings", "prototype.components"),
+    ]
     return [
         {"label": label, "icon": ico, "href": url_for(endpoint), "active": key == active}
         for key, label, ico, endpoint in items
@@ -34,12 +26,11 @@ def _nav(persona: str, active: str) -> list[dict]:
 
 def _page(template: str, persona: str = "rabbi", active: str = "", **context):
     user = "Direção" if persona == "admin" else data.RABBIS["levi"]
-    home = "prototype.home_admin" if persona == "admin" else "prototype.home_rabbi"
     return render_template(
         f"prototype/{template}",
         nav_items=_nav(persona, active),
         user_name=user,
-        home_href=url_for(home),
+        home_href=url_for("prototype.index"),
         d=data,
         **context,
     )
@@ -52,7 +43,39 @@ def _percent(held: int, absences: int) -> Decimal:
 
 @bp.get("/")
 def index():
+    """Primeira tela: os shiurim do ano, criar shiur, inserir aluno e exportar."""
+    return _page("shiurim.html", active="shiurim")
+
+
+@bp.get("/telas")
+def screens():
     return _page("index.html", active="")
+
+
+@bp.get("/alunos")
+def students():
+    return _page("students.html", active="alunos")
+
+
+@bp.get("/aluno/<int:student_id>")
+def student(student_id: int):
+    st = next((s for s in data.STUDENTS if s["id"] == student_id), None)
+    if st is None:
+        abort(404)
+    absences, lates = data.ATTENDANCE[student_id]
+    gemara = [
+        (a["name"], data.SCORES[(student_id, a["id"])], a["max"], a["in_report"])
+        for a in data.ASSESSMENTS
+    ]
+    return _page(
+        "student.html",
+        active="shiurim",
+        st=st,
+        gemara=gemara,
+        absences=absences,
+        lates=lates,
+        presence=_percent(data.CLASSES_HELD, absences),
+    )
 
 
 @bp.get("/componentes")
@@ -62,27 +85,36 @@ def components():
 
 @bp.get("/inicio/rabino")
 def home_rabbi():
-    return _page("home_rabbi.html", active="inicio")
+    return _page("home_rabbi.html", active="")
 
 
 @bp.get("/inicio/direcao")
 def home_admin():
-    return _page("home_admin.html", persona="admin", active="inicio")
+    return _page("home_admin.html", persona="admin", active="")
 
 
-@bp.get("/shiur")
-def shiur():
-    return _page("shiur.html", active="shiurim")
+@bp.get("/shiur", defaults={"slug": "alef"})
+@bp.get("/shiur/<slug>")
+def shiur(slug: str):
+    c = next((c for c in data.CLASSES if c["slug"] == slug), None)
+    if c is None:
+        abort(404)
+    return _page("shiur.html", active="shiurim", c=c)
+
+
+@bp.get("/criar-shiur")
+def create_shiur():
+    return _page("create_shiur.html", active="shiurim")
 
 
 @bp.get("/notas")
 def grades():
-    return _page("grades.html", active="notas")
+    return _page("grades.html", active="shiurim")
 
 
 @bp.get("/scans")
 def scans():
-    return _page("scans.html", active="notas")
+    return _page("scans.html", active="shiurim")
 
 
 @bp.get("/frequencia")
@@ -101,7 +133,7 @@ def report():
     return _page(
         "report.html",
         persona="admin" if review else "rabbi",
-        active="inicio" if review else "shiurim",
+        active="shiurim",
         presence=_percent(att["held"], att["absences"]),
         review=review,
     )

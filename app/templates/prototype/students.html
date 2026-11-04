@@ -1,0 +1,35 @@
+{% extends "layouts/app.html" %}
+{% from "components/ui.html" import icon, button, page_header %}
+{% block title %}Alunos{% endblock %}
+{% block content %}
+{% call page_header("Alunos", d.STUDENTS|length ~ " alunos em " ~ d.YEAR) %}
+  {{ button("Inserir aluno", icon_name="plus", attrs={"data-open-dialog": "inserir-aluno"}) }}
+{% endcall %}
+
+<div class="mb-4" x-data>
+  <label for="busca" class="sr-only">Buscar aluno</label>
+  <div class="relative max-w-md">
+    <span class="pointer-events-none absolute inset-y-0 left-3 flex items-center text-gray">{{ icon("search") }}</span>
+    <input id="busca" type="search" placeholder="Buscar por nome ou número"
+      class="h-11 w-full rounded-md border border-border bg-white pr-3 pl-10 text-base focus:border-primary"
+      @input="const q = $event.target.value.toLowerCase(); document.querySelectorAll('[data-student]').forEach(el => el.hidden = !el.dataset.student.includes(q))">
+  </div>
+</div>
+
+<ul class="overflow-hidden rounded-md border border-border bg-white shadow-sm">
+  {% for s in d.STUDENTS|sort(attribute="name") %}
+  <li class="border-t border-border first:border-t-0" data-student="{{ (s.name ~ ' ' ~ s.id)|lower }}">
+    <a href="{{ url_for('prototype.student', student_id=s.id) }}" class="flex min-h-16 items-center gap-4 px-4 py-3 hover:bg-primary-light sm:px-5">
+      <span class="flex-1">
+        <span class="block font-semibold">{{ s.name }}</span>
+        <span class="block text-sm text-gray">Nº {{ s.id }} · Shiur Alef · {{ s.grade }}</span>
+      </span>
+      <span class="text-gray">{{ icon("chevron-right") }}</span>
+    </a>
+  </li>
+  {% endfor %}
+</ul>
+
+{% set preset = "" %}
+{% include "prototype/_insert_student.html" %}
+{% endblock %}

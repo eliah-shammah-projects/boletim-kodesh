@@ -1,75 +1,49 @@
 {% extends "layouts/app.html" %}
-{% from "components/ui.html" import icon, button, status, card, page_header %}
-{% from "components/table.html" import data_table %}
-{% from "components/dialog.html" import confirm_dialog %}
-{% block title %}Shiur Alef{% endblock %}
+{% from "components/ui.html" import icon, button, status, page_header %}
+{% block title %}{{ c.name }}{% endblock %}
 {% block content %}
-{% call page_header("Shiur Alef", "1º colegial · Rabino da turma: " ~ d.RABBIS["levi"] ~ " · " ~ d.STUDENTS|length ~ " alunos", back_href=url_for("prototype.home_rabbi"), back_label="Início") %}
-  {{ button("Ver boletins", variant="secondary", icon_name="file-text", href=url_for("prototype.report")) }}
-  {{ button("Inserir aluno", icon_name="plus") }}
+{% call page_header(c.name, c.level ~ " · " ~ d.RABBIS[c.rabbi] ~ " · " ~ d.STUDENTS|length ~ " alunos", back_href=url_for("prototype.index"), back_label="Shiurim") %}
+  {{ button("Inserir aluno", icon_name="plus", attrs={"data-open-dialog": "inserir-aluno"}) }}
 {% endcall %}
 
-{# Atalhos grandes para o que mais se faz. #}
-<div class="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-3">
-  {% for label, desc, ico, endpoint in [
-    ("Notas", "Lançar e corrigir notas", "clipboard-list", "prototype.grades"),
-    ("Frequência", "Aulas, faltas e atrasos", "calendar-check", "prototype.attendance"),
-    ("Scans", "Fotos das provas", "camera", "prototype.scans"),
-  ] %}
-  <a href="{{ url_for(endpoint) }}" class="flex min-h-16 items-center gap-3 rounded-md border border-border bg-white p-4 shadow-sm hover:border-primary hover:bg-primary-light">
-    <span class="text-primary">{{ icon(ico, "size-6") }}</span>
-    <span class="flex-1"><span class="block font-semibold">{{ label }}</span><span class="block text-sm text-gray">{{ desc }}</span></span>
-    <span class="text-gray">{{ icon("chevron-right") }}</span>
-  </a>
+<h2 class="mb-3 text-lg">Matérias</h2>
+<ul class="mb-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+  {% for s in d.SUBJECTS %}
+  <li>
+    <a href="{{ url_for('prototype.grades') }}" class="flex h-full flex-col gap-1 rounded-md border border-border bg-white p-4 shadow-sm hover:border-primary hover:bg-primary-light">
+      <span class="flex items-center justify-between gap-2">
+        <span class="font-semibold">{{ s.name }} <span class="font-normal text-gray" lang="he" dir="rtl">{{ s.hebrew }}</span></span>
+        <span class="text-gray">{{ icon("chevron-right", "size-4") }}</span>
+      </span>
+      <span class="text-sm text-gray">{{ d.RABBIS[s.teacher] }}</span>
+      <span class="mt-2 text-sm font-medium text-primary">{{ s.assessments }} {{ "prova" if s.assessments == 1 else "provas" }} · notas e scans</span>
+    </a>
+  </li>
   {% endfor %}
-</div>
+</ul>
 
-<div class="grid gap-6 lg:grid-cols-3">
-  <div class="lg:col-span-1">
-    {% call card("Matérias", d.TERM["name"], padded=False) %}
-    <ul>
-      {% for s in d.SUBJECTS %}
-      <li class="flex items-center gap-3 border-t border-border px-4 py-3 first:border-t-0 sm:px-5">
-        <div class="flex-1">
-          <p class="font-semibold">{{ s.name }} <span class="font-normal text-gray" lang="he" dir="rtl">{{ s.hebrew }}</span></p>
-          <p class="text-sm text-gray">{{ d.RABBIS[s.teacher] }} · {{ s.assessments }} {{ "prova" if s.assessments == 1 else "provas" }}</p>
-        </div>
-        {{ button("Notas", variant="ghost", size="sm", href=url_for("prototype.grades")) }}
-      </li>
-      {% endfor %}
-    </ul>
-    {% endcall %}
-  </div>
-
-  <div class="min-w-0 lg:col-span-2">
-    <h2 class="mb-3 text-lg">Alunos</h2>
-    {# Celular: lista. #}
-    <ul class="grid gap-2 md:hidden">
-      {% for s in d.STUDENTS %}
-      <li class="flex items-center gap-3 rounded-md border border-border bg-white p-3">
-        <div class="flex-1">
-          <p class="font-semibold">{{ s.name }}{% if s.hebrew %} <span class="font-normal text-gray" lang="he" dir="rtl">{{ s.hebrew }}</span>{% endif %}</p>
-          <p class="text-sm text-gray">Nº {{ s.id }} · Laica: {{ s.secular }}</p>
-        </div>
-        {% if loop.index is divisibleby 3 %}{{ status("warning", "Sem comentário") }}{% else %}{{ status("success", "Comentado") }}{% endif %}
-      </li>
-      {% endfor %}
-    </ul>
-    {# Computador: tabela. #}
-    <div class="hidden md:block">
-    {% call data_table(["Nº", "Aluno", "Turma laica", "Comentários", ""], caption="Alunos do shiur") %}
-      {% for s in d.STUDENTS %}
-      <tr>
-        <td class="text-gray">{{ s.id }}</td>
-        <td><span class="font-semibold">{{ s.name }}</span>{% if s.hebrew %} <span class="text-gray" lang="he" dir="rtl">{{ s.hebrew }}</span>{% endif %}</td>
-        <td>{{ s.secular }}</td>
-        <td>{% if loop.index is divisibleby 3 %}{{ button("Escrever", variant="secondary", size="sm", icon_name="pencil") }}{% else %}{{ status("success", "Comentado") }}{% endif %}</td>
-        <td class="text-right">{{ button("Tirar do shiur", variant="ghost", size="sm", attrs={"data-open-dialog": "remover-aluno"}) }}</td>
-      </tr>
-      {% endfor %}
-    {% endcall %}
-    </div>
+<div class="mb-3 flex flex-wrap items-center justify-between gap-3">
+  <h2 class="text-lg">Alunos</h2>
+  <div class="flex flex-wrap gap-2">
+    {{ button("Frequência", variant="secondary", size="sm", icon_name="calendar-check", href=url_for("prototype.attendance")) }}
+    {{ button("Boletins", variant="secondary", size="sm", icon_name="file-text", href=url_for("prototype.report")) }}
   </div>
 </div>
-{{ confirm_dialog("remover-aluno", "Tirar o aluno do Shiur Alef?", "As notas e a frequência já lançadas continuam guardadas. O aluno fica sem shiur até ser colocado em outro.", "Tirar do shiur") }}
+<ul class="overflow-hidden rounded-md border border-border bg-white shadow-sm">
+  {% for s in d.STUDENTS %}
+  <li class="border-t border-border first:border-t-0">
+    <a href="{{ url_for('prototype.student', student_id=s.id) }}" class="flex min-h-16 items-center gap-4 px-4 py-3 hover:bg-primary-light sm:px-5">
+      <span class="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary-light font-semibold text-primary-dark">{{ s.name[0] }}</span>
+      <span class="flex-1">
+        <span class="block font-semibold">{{ s.name }}{% if s.hebrew %} <span class="font-normal text-gray" lang="he" dir="rtl">{{ s.hebrew }}</span>{% endif %}</span>
+        <span class="block text-sm text-gray">Nº {{ s.id }} · {{ s.grade }} · Laica {{ s.secular }}</span>
+      </span>
+      <span class="text-gray">{{ icon("chevron-right") }}</span>
+    </a>
+  </li>
+  {% endfor %}
+</ul>
+
+{% set preset = c.slug %}
+{% include "prototype/_insert_student.html" %}
 {% endblock %}

@@ -1,0 +1,61 @@
+{% extends "layouts/app.html" %}
+{% from "components/ui.html" import icon, button, status, page_header %}
+{% block title %}Shiurim{% endblock %}
+{% block content %}
+{% call page_header("Shiurim", d.YEAR ~ " · " ~ d.TERM["name"]) %}
+  {{ button("Exportar", variant="secondary", icon_name="upload", attrs={"data-open-dialog": "exportar"}) }}
+  {{ button("Inserir aluno", variant="secondary", icon_name="user", attrs={"data-open-dialog": "inserir-aluno"}) }}
+  {{ button("Criar shiur", icon_name="plus", href=url_for("prototype.create_shiur")) }}
+{% endcall %}
+
+<ul class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+  {% for c in d.CLASSES %}
+  {% set kind, label = d.STATUS_LABELS[c.status] %}
+  <li>
+    <a href="{{ url_for('prototype.shiur', slug=c.slug) }}"
+      class="flex h-full flex-col gap-3 rounded-md border border-border bg-white p-5 shadow-sm transition-colors hover:border-primary hover:bg-primary-light">
+      <div class="flex items-start justify-between gap-3">
+        <div>
+          <p class="font-heading text-lg font-semibold text-primary-dark">{{ c.name }}</p>
+          <p class="text-sm text-gray">{{ c.level }}</p>
+        </div>
+        <span class="text-gray">{{ icon("chevron-right") }}</span>
+      </div>
+      <p class="flex items-center gap-2">{{ icon("user", "size-4 text-gray") }}{{ d.RABBIS[c.rabbi] }}</p>
+      <div class="mt-auto flex items-center justify-between gap-2">
+        <span class="text-sm text-gray tabular-nums">{{ c.students }} alunos</span>
+        {{ status(kind, label) }}
+      </div>
+    </a>
+  </li>
+  {% endfor %}
+</ul>
+
+{% set preset = "" %}
+{% include "prototype/_insert_student.html" %}
+
+<dialog id="exportar" aria-labelledby="exportar-title"
+  class="m-auto w-[calc(100%-2rem)] max-w-md rounded-md border border-border bg-white p-0 text-text shadow-md">
+  <form method="dialog" class="grid gap-4 p-5 sm:p-6">
+    <div class="flex items-start justify-between gap-3">
+      <div>
+        <h2 id="exportar-title" class="text-xl">Exportar</h2>
+        <p class="mt-1 text-gray">De todos os shiurim de {{ d.YEAR }}.</p>
+      </div>
+      <button type="submit" class="-m-2 p-2 text-gray hover:text-text" aria-label="Fechar">{{ icon("x") }}</button>
+    </div>
+    {% for title, desc, ico in [
+      ("Planilha de alunos (Excel)", "Todos os alunos, com shiur, série e contato dos pais.", "file-text"),
+      ("Notas de todos (Excel)", "Todas as provas e notas do trimestre.", "clipboard-list"),
+      ("Boletins de todos (PDF)", "Um PDF por aluno, num arquivo .zip.", "printer"),
+    ] %}
+    <button type="submit" value="{{ loop.index }}"
+      @click="$dispatch('notify', {kind: 'info', message: 'No sistema de verdade, o arquivo baixaria agora.'})"
+      class="flex min-h-16 items-center gap-3 rounded-md border border-border p-4 text-left hover:border-primary hover:bg-primary-light">
+      <span class="text-primary">{{ icon(ico, "size-6") }}</span>
+      <span><span class="block font-semibold">{{ title }}</span><span class="block text-sm text-gray">{{ desc }}</span></span>
+    </button>
+    {% endfor %}
+  </form>
+</dialog>
+{% endblock %}

@@ -4,7 +4,7 @@
 {% block scripts %}<script src="{{ url_for('static', filename='js/grade-grid.js') }}" defer></script>{% endblock %}
 {% block content %}
 {% call page_header("Gemara · Shiur Alef", d.TERM["name"] ~ " · " ~ d.RABBIS["levi"], back_href=url_for("prototype.shiur"), back_label="Shiur Alef") %}
-  {{ button("Nova prova", variant="secondary", icon_name="plus") }}
+  {{ button("Nova prova", icon_name="plus", attrs={"data-open-dialog": "nova-prova"}) }}
 {% endcall %}
 
 <div x-data="gradeGrid()" class="grid gap-4">
@@ -90,4 +90,31 @@
     <span class="flex items-center gap-1.5"><span class="text-gray/60">{{ icon("camera", "size-4") }}</span>Sem scan (toque para enviar)</span>
   </p>
 </div>
+{% from "components/forms.html" import text_input %}
+<dialog id="nova-prova" aria-labelledby="nova-prova-title"
+  class="m-auto w-[calc(100%-2rem)] max-w-md rounded-md border border-border bg-white p-0 text-text shadow-md">
+  <form method="dialog" class="grid gap-5 p-5 sm:p-6" x-data="{ name: '' }"
+    @submit="if ($event.submitter && $event.submitter.value === 'save') $dispatch('notify', {kind: 'success', message: (name || 'Prova') + ' criada. A coluna aparece na grade.'})">
+    <div class="flex items-start justify-between gap-3">
+      <div>
+        <h2 id="nova-prova-title" class="text-xl">Nova prova</h2>
+        <p class="mt-1 text-gray">Gemara · Shiur Alef · {{ d.TERM["name"] }}</p>
+      </div>
+      <button type="submit" value="cancel" formnovalidate class="-m-2 p-2 text-gray hover:text-text" aria-label="Fechar">{{ icon("x") }}</button>
+    </div>
+    {{ text_input("prova-nome", "Nome da prova", required=True, placeholder="Ex: Prova 3, Recuperação", attrs={"x-model": "name"}) }}
+    <div class="grid grid-cols-2 gap-5">
+      {{ text_input("prova-data", "Data", type="date", hint="Opcional.") }}
+      {{ text_input("prova-max", "Nota máxima", value="10", attrs={"inputmode": "decimal"}) }}
+    </div>
+    <label class="flex min-h-11 items-start gap-3">
+      <input type="checkbox" checked class="mt-0.5 size-5 accent-primary">
+      <span><span class="block font-medium">Aparece no boletim</span><span class="block text-sm text-gray">Desmarque para provas que são só para controle interno.</span></span>
+    </label>
+    <div class="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+      {{ button("Cancelar", variant="secondary", type="submit", attrs={"value": "cancel", "formnovalidate": true}) }}
+      {{ button("Criar prova", type="submit", icon_name="check", attrs={"value": "save"}) }}
+    </div>
+  </form>
+</dialog>
 {% endblock %}

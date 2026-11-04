@@ -1,0 +1,86 @@
+{% extends "layouts/app.html" %}
+{% from "components/ui.html" import icon, button, status, card, page_header %}
+{% block title %}{{ st.name }}{% endblock %}
+{% block content %}
+{% set last = st.name.split()[-1] %}
+{% call page_header(st.name, "Nº " ~ st.id ~ " · " ~ st.grade ~ " · Shiur Alef", back_href=url_for("prototype.shiur", slug="alef"), back_label="Shiur Alef") %}
+  {{ button("Editar dados", variant="secondary", icon_name="pencil") }}
+  {{ button("Ver boletim", icon_name="file-text", href=url_for("prototype.report")) }}
+{% endcall %}
+
+<div class="grid gap-6 lg:grid-cols-3">
+  <div class="grid content-start gap-6">
+    {% call card("Dados do aluno") %}
+    <dl class="grid gap-3">
+      {% for label, value in [
+        ("Nome em hebraico", st.hebrew or "—"),
+        ("Série", st.grade),
+        ("Shiur", "Shiur Alef · " ~ d.RABBIS["levi"]),
+        ("Turma laica", st.secular),
+        ("Matrícula da secretaria", "—"),
+      ] %}
+      <div><dt class="text-sm text-gray">{{ label }}</dt><dd class="font-medium"{% if loop.first and st.hebrew %} lang="he" dir="rtl"{% endif %}>{{ value }}</dd></div>
+      {% endfor %}
+    </dl>
+    {% endcall %}
+
+    {% call card("Pais", "Recebem o boletim por email") %}
+    <dl class="grid gap-3">
+      <div><dt class="text-sm text-gray">Responsável</dt><dd class="font-medium">Família {{ last }}</dd></div>
+      <div><dt class="text-sm text-gray">Telefone</dt><dd class="font-medium tabular-nums">(11) 9{{ st.id }}-{{ "%04d"|format(st.id * 7 % 10000) }}</dd></div>
+      <div><dt class="text-sm text-gray">Emails</dt><dd class="font-medium break-all">{{ last|lower }}@email.com</dd></div>
+    </dl>
+    {% endcall %}
+  </div>
+
+  <div class="grid content-start gap-6 lg:col-span-2">
+    {% call card("Notas · " ~ d.TERM["name"], padded=False) %}
+    <ul>
+      <li class="border-t border-border px-4 py-3 first:border-t-0 sm:px-5">
+        <p class="font-semibold">Gemara <span class="text-sm font-normal text-gray">· {{ d.RABBIS["levi"] }}</span></p>
+        <ul class="mt-2 grid gap-1">
+          {% for name, v, max, in_report in gemara %}
+          <li class="flex items-center justify-between gap-3">
+            <span>{{ name }}{% if not in_report %} <span class="text-sm text-gray">(fora do boletim)</span>{% endif %}</span>
+            <span class="font-semibold tabular-nums">{% if v == "A" %}Ausente{% elif v == "D" %}Dispensado{% elif v is none %}<span class="text-warning-dark">Sem nota</span>{% else %}{{ format_score(v, max, d.SCALE_MAX) }}{% endif %}</span>
+          </li>
+          {% endfor %}
+        </ul>
+      </li>
+      {% for subj in d.REPORT.subjects[1:] %}
+      <li class="border-t border-border px-4 py-3 sm:px-5">
+        <p class="font-semibold">{{ subj.name }} <span class="text-sm font-normal text-gray">· {{ d.RABBIS[subj.teacher] }}</span></p>
+        <ul class="mt-2 grid gap-1">
+          {% for name, score, max in subj.scores %}
+          <li class="flex items-center justify-between gap-3"><span>{{ name }}</span><span class="font-semibold tabular-nums">{{ format_score(score, max, d.SCALE_MAX) }}</span></li>
+          {% endfor %}
+        </ul>
+      </li>
+      {% endfor %}
+    </ul>
+    {% endcall %}
+
+    {% call card("Frequência · " ~ d.TERM["name"]) %}
+    <dl class="grid grid-cols-2 gap-3 sm:grid-cols-4">
+      {% for label, value in [("Aulas dadas", d.CLASSES_HELD), ("Faltas", absences), ("Atrasos", lates), ("Presença", presence|percent)] %}
+      <div class="rounded-md bg-surface p-3"><dt class="text-sm text-gray">{{ label }}</dt><dd class="font-heading text-xl font-semibold tabular-nums">{{ value }}</dd></div>
+      {% endfor %}
+    </dl>
+    {% endcall %}
+
+    {% call card("Comentários do boletim", "Escritos pelo rabino da turma") %}
+    {% if st.id == d.REPORT.student.id %}
+    <h3 class="text-sm font-semibold text-gray">Geral</h3>
+    <p class="mt-1">{{ d.REPORT.general }}</p>
+    <h3 class="mt-4 text-sm font-semibold text-gray">Comportamento</h3>
+    <p class="mt-1">{{ d.REPORT.behavior }}</p>
+    {% else %}
+    <div class="flex flex-col items-start gap-3">
+      {{ status("warning", "Ainda não escritos") }}
+      {{ button("Escrever comentários", variant="secondary", icon_name="pencil") }}
+    </div>
+    {% endif %}
+    {% endcall %}
+  </div>
+</div>
+{% endblock %}

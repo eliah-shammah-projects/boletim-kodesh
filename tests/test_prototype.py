@@ -5,6 +5,12 @@ from app import create_app
 PAGES = [
     "/prototipo/",
     "/prototipo/componentes",
+    "/prototipo/telas",
+    "/prototipo/alunos",
+    "/prototipo/aluno/1012",
+    "/prototipo/aluno/1021",
+    "/prototipo/shiur/bet",
+    "/prototipo/criar-shiur",
     "/prototipo/inicio/rabino",
     "/prototipo/inicio/direcao",
     "/prototipo/shiur",

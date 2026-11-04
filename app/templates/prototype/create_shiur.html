@@ -1,0 +1,49 @@
+{% extends "layouts/app.html" %}
+{% from "components/ui.html" import icon, button, card, page_header %}
+{% from "components/forms.html" import text_input, select, textarea %}
+{% block title %}Criar shiur{% endblock %}
+{% block content %}
+{{ page_header("Criar shiur", "Tudo numa tela só. Dá para mudar depois.", back_href=url_for("prototype.index"), back_label="Shiurim") }}
+
+{% set rabbis = [("", "Escolher rabino")] + d.RABBIS.items()|list + [("novo", "+ Cadastrar rabino novo")] %}
+<form class="grid max-w-3xl gap-6" x-data
+  @submit.prevent="$dispatch('notify', {kind: 'success', message: 'Shiur criado.'}); setTimeout(() => location.href = '{{ url_for('prototype.index') }}', 900)">
+  {% call card("1. Shiur") %}
+  <div class="grid gap-5 sm:grid-cols-2">
+    {{ text_input("nome", "Nome do shiur", required=True, placeholder="Ex: Shiur Zayin") }}
+    {{ select("nivel", "Nível", [("8", "8º ano"), ("9", "9º ano"), ("10", "1º colegial"), ("11", "2º colegial"), ("12", "3º colegial")]) }}
+    <div class="sm:col-span-2">{{ select("rabino", "Rabino da turma", rabbis, hint="Dá Gemara e escreve os comentários do boletim.", required=True) }}</div>
+  </div>
+  {% endcall %}
+
+  {% call card("2. Matérias e rabinos") %}
+  <ul class="grid gap-3">
+    {% for s in d.SUBJECTS %}
+    <li class="grid items-end gap-3 sm:grid-cols-[auto_1fr]">
+      <label class="flex min-h-11 items-center gap-3 sm:w-40">
+        <input type="checkbox" checked class="size-5 accent-primary">
+        <span class="font-medium">{{ s.name }}</span>
+      </label>
+      {{ select("rabino-" ~ s.slug, "Rabino de " ~ s.name, [("", "O rabino da turma")] + d.RABBIS.items()|list, selected=s.teacher if s.slug != "gemara" else "") }}
+    </li>
+    {% endfor %}
+  </ul>
+  {% endcall %}
+
+  {% call card("3. Alunos") %}
+  <div class="grid gap-5">
+    <div class="relative">
+      <label for="buscar-aluno" class="mb-1.5 block font-medium">Buscar aluno já cadastrado</label>
+      <span class="pointer-events-none absolute bottom-0 left-3 flex h-11 items-center text-gray">{{ icon("search") }}</span>
+      <input id="buscar-aluno" type="search" placeholder="Nome ou número" class="h-11 w-full rounded-md border border-border bg-white pr-3 pl-10 text-base focus:border-primary">
+    </div>
+    {{ textarea("lista", "Ou cole uma lista de nomes", rows=5, hint="Um nome por linha. Nomes novos viram cadastro; nomes iguais a alunos já cadastrados pedem confirmação.") }}
+  </div>
+  {% endcall %}
+
+  <div class="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+    {{ button("Cancelar", variant="secondary", href=url_for("prototype.index")) }}
+    {{ button("Criar shiur", type="submit", icon_name="check") }}
+  </div>
+</form>
+{% endblock %}

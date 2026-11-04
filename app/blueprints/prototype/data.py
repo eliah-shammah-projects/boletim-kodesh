@@ -90,6 +90,8 @@ CLASSES = [
     },
 ]
 
+CLASS_OPTIONS = [(c["slug"], c["name"]) for c in CLASSES]
+
 STATUS_LABELS = {
     "open": ("warning", "Em lançamento"),
     "ready_for_review": ("primary", "Pronto para revisão"),
