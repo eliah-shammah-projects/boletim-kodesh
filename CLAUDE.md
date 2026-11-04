@@ -12,7 +12,7 @@ Sistema de notas de kodesh de uma yeshiva. Plano completo e modelo de dados em `
 - Rabino efetivo da matéria: `class_subject_terms` -> `class_subjects.default_teacher_id` -> `homeroom_rabbi_id`.
 - A nota pertence a uma prova. Decimal com até 1 casa, entre 0 e o `max_score` da prova.
 - O boletim lista, por matéria, as provas com `include_in_report = true`. Não existe nota final manual.
-- Comentários públicos (geral e comportamento): só o rabino da turma e o admin, no máximo um de cada por aluno por trimestre.
+- Comentários públicos (geral e comportamento): só o rabino da turma (nem o admin escreve ou edita), no máximo um de cada por aluno por trimestre.
 - Trimestre travado bloqueia edição de provas, notas, scans, frequência e comentários.
 - Revisão por turma e trimestre: `open` -> `ready_for_review` -> `approved`. Email só para turma `approved`.
 - Importação de Excel: sempre pré-visualização antes de aplicar, uma única transação, nunca desativar aluno automaticamente. Shiurim e rabinos novos só são criados ao confirmar a pré-visualização.

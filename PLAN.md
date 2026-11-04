@@ -46,12 +46,12 @@ Além disso:
 | Recuperação e segunda chamada | É mais uma prova. O rabino escolhe o que vai para o boletim |
 | Rabino da turma | Um por turma, dá Gemara e é o responsável pela turma |
 | Rabinos das matérias | Cada matéria tem seu rabino, que pode mudar a cada trimestre |
-| Comentários no boletim | Só o rabino da turma (e a direção) escreve: um comentário geral e um de comportamento por aluno por trimestre |
+| Comentários no boletim | Só o rabino da turma escreve: um comentário geral e um de comportamento por aluno por trimestre. A direção não escreve nem corrige: se precisar mudar, devolve a turma para `open` |
 | Frequência | Por aluno e trimestre, uma só para a turma inteira (não por matéria): aulas dadas, faltas, atrasos e % de presença. Atraso conta como presença. Manual ou por Excel |
 | Troca de turma | Permitida no meio do ano |
 | Ano letivo | Nome civil (ex: 2027). Cada ano começa vazio. Ano fechado vai para o arquivo, só leitura. O cadastro do aluno continua entre os anos |
 | Nomes iguais | Cada aluno tem um cadastro único no sistema. A matrícula da secretaria é opcional: pode existir para alguns alunos e não para outros. Nome igual a outro aluno sempre pede confirmação |
-| Scans | Scan da prova por aluno, prova em branco e gabarito por prova. Só a equipe vê. Não vão no boletim. Guardados até 2 anos depois da formatura do aluno |
+| Scans | Scan da prova por aluno, prova em branco e gabarito por prova. Só a equipe vê. Não vão no boletim. Guardados até 1 ano depois da formatura do aluno |
 | Área laica | Fora do sistema de notas. Só um campo com a turma laica do aluno no ano. Boletim separado |
 | Remetente do email | Configurável numa tela de configurações do admin (email e nome do remetente), não fixo no código |
 | Pais | Sem acesso. Recebem o boletim em PDF por email (até dois emails por aluno) |
@@ -235,7 +235,7 @@ app_settings                           -- configurações editáveis pelo admin 
 - Lançada à mão numa grade da turma, ou importada de Excel.
 
 **Comentários**
-- Comentários públicos: só o rabino da turma e a direção escrevem. No máximo um geral e um de comportamento por aluno por trimestre.
+- Comentários públicos: só o rabino da turma escreve. A direção não escreve nem edita. No máximo um geral e um de comportamento por aluno por trimestre.
 - Anotações internas: qualquer rabino. Ilimitadas e nunca saem do sistema.
 
 **Scans**
@@ -245,7 +245,7 @@ app_settings                           -- configurações editáveis pelo admin 
 
 **Revisão e envio**
 - Cada turma, em cada trimestre: `open` -> `ready_for_review` (rabino da turma marcou como pronta) -> `approved` (direção liberou).
-- Em `ready_for_review`, só a direção edita, e pode devolver para `open`.
+- Em `ready_for_review`, só a direção edita (menos os comentários públicos), e pode devolver para `open`.
 - `approved` trava o trimestre daquela turma. Só o admin reabre.
 - Só boletim de turma `approved` é enviado. A pré-visualização funciona sempre, com marca d'água "rascunho".
 - Um email por aluno, para os dois emails dos pais, com o PDF anexado. Cada envio fica em `report_deliveries`, e falhas podem ser reenviadas.
@@ -274,7 +274,7 @@ app_settings                           -- configurações editáveis pelo admin 
 | Ver todas as turmas e alunos do ano ativo e do arquivo | sim | sim | sim |
 | Criar provas, lançar notas e subir scans | sim | sim | sim |
 | Lançar frequência | sim | sim | sim |
-| Comentários públicos (geral e comportamento) | sim | sim, na sua turma | não |
+| Comentários públicos (geral e comportamento) | não | sim, na sua turma | não |
 | Anotações internas | sim | sim | sim |
 | Marcar turma como pronta para revisão | sim | sim, na sua turma | não |
 | Liberar, enviar boletins, destravar trimestre, fechar ano | sim | não | não |
@@ -417,7 +417,7 @@ A partir daqui, cada fase termina com deploy.
 - [ ] Testes: validação, cálculo da %, importação
 
 ### Fase 11: Comentários
-- [ ] Comentário geral e de comportamento por aluno, só para o rabino da turma e a direção
+- [ ] Comentário geral e de comportamento por aluno, só para o rabino da turma
 - [ ] Anotações internas para todos os rabinos
 - [ ] Testes de permissão, limite e visibilidade
 
@@ -453,7 +453,7 @@ A partir daqui, cada fase termina com deploy.
 - [ ] Fechar o ano: confirmação, verificação de pendências (turmas não liberadas), status `archived`
 - [ ] Tela de arquivo: anos fechados, só leitura, com turmas, notas, frequência e boletins
 - [ ] Ficha do aluno com o histórico de todos os anos, ligada pela matrícula
-- [ ] Apagar scans 2 anos depois da formatura do aluno, com confirmação do admin
+- [ ] Apagar scans 1 ano depois da formatura do aluno, com confirmação do admin
 - [ ] Visão por turma: status de lançamento (provas sem nota, alunos sem scan, frequência faltando)
 
 ### Fase 16: Abertura do ano novo
@@ -478,7 +478,6 @@ A partir daqui, cada fase termina com deploy.
 
 ## 8. Pendências para confirmar com a direção
 
-- Comentários públicos: o usuário respondeu que só o rabino da turma escreve. Falta confirmar se a direção pode corrigir na revisão
 - Um exemplo real da planilha de alunos (pode ser com nomes trocados), para definir o formato da importação. Virá depois; até lá, formato provisório
 - Logo: usar `assets/logo.webp` (vetorizar na Fase 1). Cabeçalho oficial e assinatura no boletim: a definir
 - Endereço que envia os emails: definido pelo admin na tela de configurações, perto do envio
