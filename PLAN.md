@@ -422,7 +422,8 @@ A partir daqui, cada fase termina com deploy.
 - [ ] Testes de permissão, limite e visibilidade
 
 ### Fase 12: Boletim em PDF
-- [ ] Template em português seguindo a identidade visual: logo, aluno, série, turma, rabino da turma, trimestre
+- [ ] Template em português seguindo a identidade visual. Cabeçalho: logo e "Yeshiva Or Yossef". Depois: aluno, série, turma, rabino da turma, trimestre
+- [ ] Rodapé com espaço para assinatura e o nome do rabino da turma
 - [ ] Cada matéria com o rabino do trimestre e a lista de provas marcadas
 - [ ] Frequência: aulas, faltas, atrasos e % de presença
 - [ ] Comentário geral e de comportamento
@@ -479,7 +480,7 @@ A partir daqui, cada fase termina com deploy.
 ## 8. Pendências para confirmar com a direção
 
 - Um exemplo real da planilha de alunos (pode ser com nomes trocados), para definir o formato da importação. Virá depois; até lá, formato provisório
-- Logo: usar `assets/logo.webp` (vetorizar na Fase 1). Cabeçalho oficial e assinatura no boletim: a definir
+- Logo: usar `assets/logo.webp` (vetorizar na Fase 1). Cabeçalho do boletim: logo e "Yeshiva Or Yossef" por ora; endereço e telefone talvez depois
 - Endereço que envia os emails: definido pelo admin na tela de configurações, perto do envio
 - LGPD: comunicação aos pais sobre os dados guardados. Não por ora, mas obrigatório antes de entrar dado real
 
