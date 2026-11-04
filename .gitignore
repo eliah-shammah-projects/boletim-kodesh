@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+
+# Ambiente e segredos
+.env
+
+# Gerados no build
+app/static/dist/
+bin/
+
+# Arquivos locais (scans, documentos) em desenvolvimento
+storage/
+instance/
+
+# Editores e sistema
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
