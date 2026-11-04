@@ -341,7 +341,7 @@ Regras:
 
 ### Fase 1: Design e protótipo
 - [ ] Identidade visual da seção 6b configurada no Tailwind (cores, fontes, espaçamentos) e componentes (botões, tabelas, formulários, alertas, modais)
-- [ ] Logo em SVG (pedir o original à escola ou vetorizar o PNG)
+- [ ] Logo em SVG (pedir o original à escola ou vetorizar o PNG). Tentativa de vetorizar o PNG ficou parecida, mas não idêntica: por ora usamos `logo.png` (464px, ~300 dpi a 4 cm no boletim). Pedir o original (SVG/PDF/AI/EPS) à escola, à Digital Bees (fez o site) ou à gráfica
 - [ ] Protótipo navegável das telas principais: tela inicial com pendências (rabino e direção), shiur, grade de notas, scan pelo celular, frequência, boletim
 - [ ] Revisão do protótipo com o seu pai e um rabino, e ajustes
 - [ ] Biblioteca de componentes Jinja (macros) baseada no protótipo
