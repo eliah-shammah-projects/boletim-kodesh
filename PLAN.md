@@ -303,8 +303,8 @@ Cores tiradas do logo:
 | Token | Cor | Uso |
 |---|---|---|
 | `primary` | `#005A93` | Azul do logo. Botões principais, links, cabeçalho, destaques. Contraste 7.3:1 sobre branco (medido no logo.png) |
-| `primary-dark` | `#00466F` | Hover e texto de títulos |
-| `primary-light` | `#E6F0F6` | Fundo de linha selecionada, aba ativa, áreas de destaque |
+| `primary-dark` | `#004874` | Hover e texto de títulos |
+| `primary-light` | `#E6EFF5` | Fundo de linha selecionada, aba ativa, áreas de destaque |
 | `gray` | `#6E6E6E` | Cinza do logo. Texto secundário, rótulos |
 | `text` | `#1F2933` | Texto principal |
 | `border` | `#DDE3E8` | Bordas e divisórias |
@@ -313,8 +313,13 @@ Cores tiradas do logo:
 | `success` | `#2E7D4F` | Salvo, liberado |
 | `warning` | `#B7791F` | Pendente, faltando |
 | `danger` | `#B42318` | Erro, ação destrutiva |
+| `success-light` | `#EAF4EE` | Fundo de aviso e selo de sucesso |
+| `warning-light` | `#FBF3E6` | Fundo de aviso e selo de pendência |
+| `warning-dark` | `#8A5B14` | Texto em cor de pendência (o `warning` não tem contraste suficiente para texto) |
+| `danger-light` | `#FBEAE8` | Fundo de aviso e selo de erro |
 
 Regras:
+- As cores padrão do Tailwind estão desligadas (`app/static/src/app.css`): só existem estes tokens.
 - O azul é para o que importa: ação principal, navegação ativa, cabeçalho. O resto é branco e cinza.
 - Cores de status sempre acompanhadas de texto ou ícone, nunca só a cor.
 - Tipografia: Montserrat (geométrica, conversa com o logo) só em títulos. IBM Plex Sans no corpo e nas tabelas. IBM Plex Sans Hebrew para textos em hebraico.

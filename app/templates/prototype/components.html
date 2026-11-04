@@ -1,0 +1,90 @@
+{% extends "layouts/app.html" %}
+{% from "components/ui.html" import icon, button, status, alert, card, page_header, empty_state %}
+{% from "components/forms.html" import text_input, select, textarea %}
+{% from "components/table.html" import data_table %}
+{% from "components/dialog.html" import confirm_dialog %}
+{% block title %}Componentes{% endblock %}
+{% block content %}
+{% call page_header("Componentes", "As peças que todas as telas usam.", back_href=url_for("prototype.index"), back_label="Protótipo") %}
+  {{ button("Ação secundária", variant="secondary") }}
+  {{ button("Ação principal", icon_name="plus") }}
+{% endcall %}
+
+<div class="grid gap-6">
+  {% call card("Cores", "Tiradas do logo. O azul é só para o que importa.") %}
+  <div class="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-6">
+    {% for name, cls in [("primary", "bg-primary"), ("primary-dark", "bg-primary-dark"), ("primary-light", "bg-primary-light"), ("gray", "bg-gray"), ("text", "bg-text"), ("border", "bg-border"), ("surface", "bg-surface"), ("success", "bg-success"), ("warning", "bg-warning"), ("danger", "bg-danger")] %}
+    <div>
+      <div class="h-14 rounded-md border border-border {{ cls }}"></div>
+      <p class="mt-1 text-sm text-gray">{{ name }}</p>
+    </div>
+    {% endfor %}
+  </div>
+  {% endcall %}
+
+  {% call card("Tipografia") %}
+  <h1 class="text-3xl">Título em Montserrat</h1>
+  <h2 class="mt-3 text-xl">Subtítulo · Gemara גמרא</h2>
+  <p class="mt-3 max-w-prose">Texto em IBM Plex Sans. Ação, atenção, Conceição. Nomes em hebraico usam a IBM Plex Sans Hebrew: שָׁלוֹם עֲלֵיכֶם, בבא מציעא.</p>
+  <p class="mt-2 text-sm text-gray">Texto secundário, para rótulos e explicações.</p>
+  <p class="mt-3 tabular-nums">Números alinhados: 10 · 9,5 · 6,6 · 18/20</p>
+  {% endcall %}
+
+  {% call card("Botões", "Grandes (44px), fáceis de tocar no celular.") %}
+  <div class="flex flex-wrap gap-3">
+    {{ button("Salvar", icon_name="check") }}
+    {{ button("Cancelar", variant="secondary") }}
+    {{ button("Ver boletim", variant="ghost", icon_name="eye") }}
+    {{ button("Apagar prova", variant="danger", icon_name="trash-2", attrs={"data-open-dialog": "demo-apagar"}) }}
+    {{ button("Desativado", attrs={"disabled": true}) }}
+  </div>
+  {{ confirm_dialog("demo-apagar", "Apagar a Prova 1?", "A prova e as notas dela serão apagadas. Esta ação não pode ser desfeita.", "Apagar prova") }}
+  {% endcall %}
+
+  {% call card("Status", "Sempre com ícone e texto, nunca só a cor.") %}
+  <div class="flex flex-wrap gap-2">
+    {{ status("success", "Liberado") }}
+    {{ status("primary", "Pronto para revisão") }}
+    {{ status("warning", "Em lançamento") }}
+    {{ status("danger", "Atrasado") }}
+    {{ status("neutral", "Sem provas") }}
+  </div>
+  {% endcall %}
+
+  {% call card("Avisos") %}
+  <div class="grid gap-3">
+    {{ alert("success", "As notas da Prova 1 foram salvas.") }}
+    {{ alert("warning", "Faltam 2 alunos sem nota na Prova 2.", title="Quase lá") }}
+    {{ alert("danger", "A nota precisa ser entre 0 e 10.", title="Não foi possível salvar") }}
+    {{ alert("info", "O trimestre termina em 12 dias.") }}
+  </div>
+  <div class="mt-4 flex flex-wrap gap-3">
+    {{ button("Mostrar aviso rápido", variant="secondary", attrs={"x-data": "", "@click": "$dispatch('notify', {kind: 'success', message: 'Salvo'})"}) }}
+    {{ button("Mostrar erro rápido", variant="secondary", attrs={"x-data": "", "@click": "$dispatch('notify', {kind: 'danger', message: 'Sem conexão. Tente de novo.'})"}) }}
+  </div>
+  {% endcall %}
+
+  {% call card("Formulário") %}
+  <form class="grid max-w-xl gap-5" x-data @submit.prevent="$dispatch('notify', {kind: 'success', message: 'Salvo'})">
+    {{ text_input("nome", "Nome do aluno", required=True, placeholder="Nome e sobrenome") }}
+    {{ text_input("hebraico", "Nome em hebraico", hint="Opcional.", attrs={"dir": "auto"}) }}
+    {{ text_input("nota", "Nota", value="11", error="A nota precisa ser entre 0 e 10.", attrs={"inputmode": "decimal"}) }}
+    {{ select("shiur", "Shiur", [("", "Sem shiur por enquanto"), ("alef", "Shiur Alef"), ("bet", "Shiur Bet")]) }}
+    {{ textarea("comentario", "Comentário geral", hint="Aparece no boletim. Até 600 caracteres.", maxlength=600) }}
+    <div class="flex gap-3">{{ button("Salvar", type="submit", icon_name="check") }}{{ button("Cancelar", variant="secondary") }}</div>
+  </form>
+  {% endcall %}
+
+  {% call card("Tabela") %}
+  {% call data_table(["Aluno", "Shiur", ("Nota", "right"), "Situação"]) %}
+    <tr><td>Ariel Szwarc</td><td>Shiur Alef</td><td class="text-right">9,5</td><td>{{ status("success", "Com scan") }}</td></tr>
+    <tr><td>Daniel Abramovich</td><td>Shiur Alef</td><td class="text-right">10</td><td>{{ status("success", "Com scan") }}</td></tr>
+    <tr><td>David Zaguri</td><td>Shiur Alef</td><td class="text-right">6,6</td><td>{{ status("warning", "Sem scan") }}</td></tr>
+  {% endcall %}
+  {% endcall %}
+
+  {% call card("Vazio") %}
+  {% call empty_state("Nenhuma prova criada neste trimestre.", "clipboard-list") %}{{ button("Criar prova", icon_name="plus") }}{% endcall %}
+  {% endcall %}
+</div>
+{% endblock %}

@@ -1,0 +1,74 @@
+{#
+  Campos de formulário. Rótulo sempre visível, dica e erro embaixo do campo.
+    {% from "components/forms.html" import text_input, select, textarea, wtf_field, csrf_field %}
+#}
+{% from "components/ui.html" import icon %}
+
+{% set input_cls = "block w-full min-h-11 rounded-md border bg-white px-3 text-base text-text placeholder:text-gray/70 focus:outline-2 focus:outline-primary focus:border-primary" %}
+
+{% macro _wrap(id, label, hint=None, error=None, required=False) -%}
+<div class="flex flex-col gap-1.5">
+  <label for="{{ id }}" class="font-medium">{{ label }}{% if required %} <span class="text-danger" aria-hidden="true">*</span>{% endif %}</label>
+  {{ caller() }}
+  {% if error %}
+  <p id="{{ id }}-error" class="flex items-center gap-1.5 text-sm text-danger">{{ icon("circle-x", "size-4") }}{{ error }}</p>
+  {% elif hint %}
+  <p id="{{ id }}-hint" class="text-sm text-gray">{{ hint }}</p>
+  {% endif %}
+</div>
+{%- endmacro %}
+
+{% macro _describedby(id, hint, error) -%}
+{%- if error %} aria-invalid="true" aria-describedby="{{ id }}-error"{% elif hint %} aria-describedby="{{ id }}-hint"{% endif -%}
+{%- endmacro %}
+
+{% macro text_input(name, label, value="", type="text", hint=None, error=None, required=False, placeholder=None, id=None, attrs={}) -%}
+{%- set id = id or name -%}
+{% call _wrap(id, label, hint, error, required) %}
+<input id="{{ id }}" name="{{ name }}" type="{{ type }}" value="{{ value }}"
+  class="{{ input_cls }} {{ 'border-danger' if error else 'border-border' }}"
+  {%- if placeholder %} placeholder="{{ placeholder }}"{% endif %}
+  {%- if required %} required{% endif %}{{ _describedby(id, hint, error) }}{{ attrs|xmlattr }}>
+{% endcall %}
+{%- endmacro %}
+
+{# options: lista de (valor, rótulo) #}
+{% macro select(name, label, options, selected=None, hint=None, error=None, required=False, id=None, attrs={}) -%}
+{%- set id = id or name -%}
+{% call _wrap(id, label, hint, error, required) %}
+<div class="relative">
+  <select id="{{ id }}" name="{{ name }}" class="{{ input_cls }} appearance-none pr-10 {{ 'border-danger' if error else 'border-border' }}"
+    {%- if required %} required{% endif %}{{ _describedby(id, hint, error) }}{{ attrs|xmlattr }}>
+    {% for value, text in options %}
+    <option value="{{ value }}"{% if value == selected %} selected{% endif %}>{{ text }}</option>
+    {% endfor %}
+  </select>
+  <span class="pointer-events-none absolute inset-y-0 right-3 flex items-center text-gray">{{ icon("chevron-down", "size-4") }}</span>
+</div>
+{% endcall %}
+{%- endmacro %}
+
+{% macro textarea(name, label, value="", rows=4, hint=None, error=None, required=False, maxlength=None, id=None, attrs={}) -%}
+{%- set id = id or name -%}
+{% call _wrap(id, label, hint, error, required) %}
+<textarea id="{{ id }}" name="{{ name }}" rows="{{ rows }}"
+  class="{{ input_cls }} py-2 {{ 'border-danger' if error else 'border-border' }}"
+  {%- if maxlength %} maxlength="{{ maxlength }}"{% endif %}
+  {%- if required %} required{% endif %}{{ _describedby(id, hint, error) }}{{ attrs|xmlattr }}>{{ value }}</textarea>
+{% endcall %}
+{%- endmacro %}
+
+{# Campo de um formulário Flask-WTF, com o mesmo visual. #}
+{% macro wtf_field(field, hint=None, attrs={}) -%}
+{%- set error = field.errors[0] if field.errors else None -%}
+{%- set extra = {"class": input_cls ~ (" py-2" if field.type == "TextAreaField" else "") ~ (" border-danger" if error else " border-border")} -%}
+{%- if error %}{% set _ = extra.update({"aria-invalid": "true", "aria-describedby": field.id ~ "-error"}) %}{% elif hint %}{% set _ = extra.update({"aria-describedby": field.id ~ "-hint"}) %}{% endif -%}
+{%- set _ = extra.update(attrs) -%}
+{% call _wrap(field.id, field.label.text, hint, error, field.flags.required) %}
+{{ field(**extra) }}
+{% endcall %}
+{%- endmacro %}
+
+{% macro csrf_field() -%}
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+{%- endmacro %}

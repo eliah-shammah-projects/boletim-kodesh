@@ -1,0 +1,110 @@
+{#
+  Componentes básicos. Importar com:
+    {% from "components/ui.html" import icon, button, status, alert, card, page_header, empty_state %}
+#}
+
+{% macro icon(name, class="size-5") -%}
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="{{ class }} shrink-0" aria-hidden="true">{% include "icons/" ~ name ~ ".svg" %}</svg>
+{%- endmacro %}
+
+
+{#
+  Botão ou link com cara de botão.
+  variant: primary | secondary | danger | ghost
+  size: md (44px, padrão) | sm (36px, só dentro de tabelas no computador)
+  attrs: dict de atributos extras, ex: {"hx-post": url, "data-open-dialog": "x"}
+#}
+{% macro button(label, variant="primary", type="button", href=None, icon_name=None, size="md", full=False, attrs={}) -%}
+{%- set variants = {
+  "primary": "bg-primary text-white hover:bg-primary-dark",
+  "secondary": "bg-white text-primary-dark border border-border hover:bg-primary-light",
+  "danger": "bg-danger text-white hover:bg-danger/90",
+  "ghost": "text-primary hover:bg-primary-light",
+} -%}
+{%- set sizes = {"md": "min-h-11 px-4 text-base", "sm": "min-h-9 px-3 text-sm"} -%}
+{%- set cls = "inline-flex items-center justify-center gap-2 rounded-md font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50 " ~ variants[variant] ~ " " ~ sizes[size] ~ (" w-full" if full else "") -%}
+{%- if href -%}
+<a href="{{ href }}" class="{{ cls }}"{{ attrs|xmlattr }}>{% if icon_name %}{{ icon(icon_name) }}{% endif %}<span>{{ label }}</span></a>
+{%- else -%}
+<button type="{{ type }}" class="{{ cls }}"{{ attrs|xmlattr }}>{% if icon_name %}{{ icon(icon_name) }}{% endif %}<span>{{ label }}</span></button>
+{%- endif -%}
+{%- endmacro %}
+
+
+{#
+  Selo de status. Sempre ícone + texto, nunca só a cor.
+  kind: success | warning | danger | neutral | primary
+#}
+{% macro status(kind, label) -%}
+{%- set styles = {
+  "success": ("bg-success-light text-success", "circle-check"),
+  "warning": ("bg-warning-light text-warning-dark", "clock"),
+  "danger": ("bg-danger-light text-danger", "circle-x"),
+  "neutral": ("bg-surface text-gray border border-border", "info"),
+  "primary": ("bg-primary-light text-primary-dark", "info"),
+} -%}
+{%- set cls, ico = styles[kind] -%}
+<span class="inline-flex items-center gap-1.5 rounded-sm px-2 py-0.5 text-sm font-medium whitespace-nowrap {{ cls }}">{{ icon(ico, "size-4") }}{{ label }}</span>
+{%- endmacro %}
+
+
+{# Aviso em bloco. kind: success | warning | danger | info #}
+{% macro alert(kind, message, title=None) -%}
+{%- set styles = {
+  "success": ("border-success bg-success-light", "text-success", "circle-check"),
+  "warning": ("border-warning bg-warning-light", "text-warning-dark", "triangle-alert"),
+  "danger": ("border-danger bg-danger-light", "text-danger", "circle-x"),
+  "info": ("border-primary bg-primary-light", "text-primary", "info"),
+} -%}
+{%- set box, ico_color, ico = styles[kind] -%}
+<div class="flex gap-3 rounded-md border-l-4 p-4 {{ box }}" role="{{ 'alert' if kind == 'danger' else 'status' }}">
+  <span class="{{ ico_color }}">{{ icon(ico) }}</span>
+  <div>
+    {% if title %}<p class="font-semibold">{{ title }}</p>{% endif %}
+    <p>{{ message }}</p>
+  </div>
+</div>
+{%- endmacro %}
+
+
+{# Cartão. Uso: {% call card("Título") %} conteúdo {% endcall %} #}
+{% macro card(title=None, subtitle=None, padded=True) -%}
+<section class="min-w-0 rounded-md border border-border bg-white shadow-sm">
+  {% if title %}
+  <header class="border-b border-border px-4 py-3 sm:px-5">
+    <h2 class="text-lg">{{ title }}</h2>
+    {% if subtitle %}<p class="text-sm text-gray">{{ subtitle }}</p>{% endif %}
+  </header>
+  {% endif %}
+  <div class="{{ 'p-4 sm:p-5' if padded else '' }}">{{ caller() }}</div>
+</section>
+{%- endmacro %}
+
+
+{#
+  Título da página, com link de voltar opcional.
+  Ações à direita: {% call page_header("Título") %} botões {% endcall %}
+#}
+{% macro page_header(title, subtitle=None, back_href=None, back_label="Voltar") -%}
+<div class="mb-6">
+  {% if back_href %}
+  <a href="{{ back_href }}" class="mb-2 inline-flex min-h-11 items-center gap-1 text-primary hover:text-primary-dark">{{ icon("chevron-left", "size-4") }}{{ back_label }}</a>
+  {% endif %}
+  <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+    <div>
+      <h1 class="text-2xl sm:text-3xl">{{ title }}</h1>
+      {% if subtitle %}<p class="mt-1 text-gray">{{ subtitle }}</p>{% endif %}
+    </div>
+    {% if caller is defined %}<div class="flex flex-wrap gap-2">{{ caller() }}</div>{% endif %}
+  </div>
+</div>
+{%- endmacro %}
+
+
+{% macro empty_state(message, icon_name="info") -%}
+<div class="flex flex-col items-center gap-3 rounded-md border border-dashed border-border bg-white p-8 text-center text-gray">
+  {{ icon(icon_name, "size-8") }}
+  <p>{{ message }}</p>
+  {% if caller is defined %}<div>{{ caller() }}</div>{% endif %}
+</div>
+{%- endmacro %}

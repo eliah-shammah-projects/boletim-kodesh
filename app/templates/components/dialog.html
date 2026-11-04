@@ -1,0 +1,35 @@
+{#
+  Janela de confirmação para ação destrutiva (CLAUDE.md: sempre pedir confirmação).
+  Abrir com qualquer botão que tenha data-open-dialog="<id>":
+    {{ button("Apagar prova", variant="danger", icon_name="trash-2", attrs={"data-open-dialog": "apagar-prova"}) }}
+    {{ confirm_dialog("apagar-prova", "Apagar a Prova 1?", "Esta ação não pode ser desfeita.", "Apagar", action=url) }}
+  Sem action, o botão de confirmar só fecha a janela (útil no protótipo).
+#}
+{% from "components/ui.html" import icon, button %}
+{% from "components/forms.html" import csrf_field %}
+
+{% macro confirm_dialog(id, title, message, confirm_label="Confirmar", action=None, method="post", danger=True) -%}
+<dialog id="{{ id }}" aria-labelledby="{{ id }}-title"
+  class="m-auto w-[calc(100%-2rem)] max-w-md rounded-md border border-border bg-white p-0 text-text shadow-md">
+  <div class="p-5 sm:p-6">
+    <div class="flex gap-3">
+      <span class="{{ 'text-danger' if danger else 'text-primary' }}">{{ icon("triangle-alert" if danger else "info", "size-6") }}</span>
+      <div>
+        <h2 id="{{ id }}-title" class="text-lg">{{ title }}</h2>
+        <p class="mt-2 text-gray">{{ message }}</p>
+      </div>
+    </div>
+    <div class="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+      <form method="dialog">{{ button("Cancelar", variant="secondary", type="submit", full=True) }}</form>
+      {% if action %}
+      <form method="{{ method }}" action="{{ action }}">
+        {{ csrf_field() }}
+        {{ button(confirm_label, variant="danger" if danger else "primary", type="submit", full=True) }}
+      </form>
+      {% else %}
+      <form method="dialog">{{ button(confirm_label, variant="danger" if danger else "primary", type="submit", full=True, attrs={"value": "confirm"}) }}</form>
+      {% endif %}
+    </div>
+  </div>
+</dialog>
+{%- endmacro %}

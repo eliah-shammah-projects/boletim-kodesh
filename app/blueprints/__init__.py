@@ -28,3 +28,7 @@ BLUEPRINTS = (
 def register_blueprints(app: Flask) -> None:
     for bp in BLUEPRINTS:
         app.register_blueprint(bp)
+    if app.config.get("PROTOTYPE_ENABLED"):
+        from app.blueprints.prototype import bp as prototype_bp
+
+        app.register_blueprint(prototype_bp)

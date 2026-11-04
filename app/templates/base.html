@@ -1,14 +1,41 @@
+{% from "components/ui.html" import icon %}
 <!doctype html>
 <html lang="pt-BR">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{% block title %}Boletim Kodesh{% endblock %}</title>
+  <meta name="theme-color" content="#005a93">
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/favicon.png') }}">
+  <link rel="apple-touch-icon" href="{{ url_for('static', filename='img/apple-touch-icon.png') }}">
+  <title>{% block title %}Boletim Kodesh{% endblock %} · Or Yossef</title>
+  <link rel="preload" href="{{ url_for('static', filename='fonts/ibm-plex-sans-400.woff2') }}" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="{{ url_for('static', filename='dist/app.css') }}">
   <script src="{{ url_for('static', filename='vendor/htmx.min.js') }}" defer></script>
+  <script src="{{ url_for('static', filename='js/app.js') }}" defer></script>
   <script src="{{ url_for('static', filename='vendor/alpine.min.js') }}" defer></script>
 </head>
-<body hx-headers='{"X-CSRFToken": "{{ csrf_token() }}"}'>
-  {% block content %}{% endblock %}
+<body class="min-h-screen bg-surface text-text antialiased" hx-headers='{"X-CSRFToken": "{{ csrf_token() }}"}'>
+  {% block body %}{% block content %}{% endblock %}{% endblock %}
+
+  {# Avisos rápidos (salvo, erro). Ficam acima da barra de navegação do celular. #}
+  <div x-data="toasts" @notify.window="add($event.detail)" aria-live="polite"
+    class="pointer-events-none fixed inset-x-0 bottom-20 z-50 flex flex-col items-center gap-2 px-4 md:bottom-6 md:items-end md:px-6">
+    <template x-for="item in items" :key="item.id">
+      <div x-cloak class="pointer-events-auto flex w-full max-w-sm items-start gap-3 rounded-md border bg-white p-3 shadow-md"
+        :class="{
+          'border-success': item.kind === 'success',
+          'border-danger': item.kind === 'danger',
+          'border-warning': item.kind === 'warning',
+          'border-primary': item.kind === 'info',
+        }">
+        <span x-show="item.kind === 'success'" class="text-success">{{ icon("circle-check") }}</span>
+        <span x-show="item.kind === 'danger'" class="text-danger">{{ icon("circle-x") }}</span>
+        <span x-show="item.kind === 'warning'" class="text-warning-dark">{{ icon("triangle-alert") }}</span>
+        <span x-show="item.kind === 'info'" class="text-primary">{{ icon("info") }}</span>
+        <p class="flex-1" x-text="item.message"></p>
+        <button type="button" class="-m-1 p-1 text-gray hover:text-text" @click="remove(item.id)" aria-label="Fechar aviso">{{ icon("x", "size-4") }}</button>
+      </div>
+    </template>
+  </div>
 </body>
 </html>

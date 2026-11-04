@@ -4,6 +4,7 @@ from flask import Flask
 
 from app.blueprints import register_blueprints
 from app.extensions import csrf, db, migrate
+from app.services.formatting import format_decimal, format_percent, format_score
 from config import CONFIGS
 
 
@@ -20,6 +21,9 @@ def create_app(config_name: str | None = None) -> Flask:
     db.init_app(app)
     migrate.init_app(app, db)
     csrf.init_app(app)
+
+    app.jinja_env.filters.update(decimal=format_decimal, percent=format_percent)
+    app.jinja_env.globals.update(format_score=format_score)
 
     register_blueprints(app)
     return app

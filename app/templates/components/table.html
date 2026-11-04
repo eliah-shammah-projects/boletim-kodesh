@@ -1,0 +1,30 @@
+{#
+  Tabela de dados. As linhas vêm no bloco call, como <tr><td>…</td></tr> simples:
+    {% from "components/table.html" import data_table %}
+    {% call data_table(["Aluno", ("Nota", "right")]) %}
+      <tr><td>…</td><td>…</td></tr>
+    {% endcall %}
+  Cada coluna é um texto ou (texto, alinhamento). Alinhamento: left | right | center.
+  Números ficam com algarismos tabulares, alinhados.
+#}
+
+{% macro data_table(columns, caption=None, sticky_first=False) -%}
+<div class="overflow-x-auto rounded-md border border-border bg-white">
+  <table class="w-full border-collapse text-left tabular-nums
+    [&_td]:px-4 [&_td]:py-3 [&_td]:align-middle
+    [&_tbody_tr]:border-t [&_tbody_tr]:border-border
+    [&_tbody_tr:hover]:bg-surface
+    {{ '[&_td:first-child]:sticky [&_td:first-child]:left-0 [&_td:first-child]:bg-white [&_th:first-child]:sticky [&_th:first-child]:left-0 [&_th:first-child]:z-10' if sticky_first else '' }}">
+    {% if caption %}<caption class="sr-only">{{ caption }}</caption>{% endif %}
+    <thead class="bg-surface">
+      <tr>
+        {% for col in columns %}
+        {%- set text, align = (col if col is not string else (col, "left")) -%}
+        <th scope="col" class="px-4 py-3 text-sm font-semibold text-gray bg-surface whitespace-nowrap text-{{ align }}">{{ text }}</th>
+        {% endfor %}
+      </tr>
+    </thead>
+    <tbody>{{ caller() }}</tbody>
+  </table>
+</div>
+{%- endmacro %}
