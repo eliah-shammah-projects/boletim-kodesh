@@ -5,7 +5,6 @@
 {% set last = st.name.split()[-1] %}
 {% call page_header(st.name, "Nº " ~ st.id ~ " · " ~ st.grade ~ " · Shiur Alef", back_href=url_for("prototype.shiur", slug="alef"), back_label="Shiur Alef") %}
   {{ button("Editar dados", variant="secondary", icon_name="pencil") }}
-  {{ button("Ver boletim", icon_name="file-text", href=url_for("prototype.report")) }}
 {% endcall %}
 
 <div class="grid gap-6 lg:grid-cols-3">
@@ -33,8 +32,27 @@
     {% endcall %}
   </div>
 
-  <div class="grid content-start gap-6 lg:col-span-2">
-    {% call card("Notas · " ~ d.TERM["name"], padded=False) %}
+  <div class="grid content-start gap-6 lg:col-span-2" x-data="{ term: 1 }">
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div class="grid grid-cols-3 gap-1 rounded-md border border-border bg-white p-1" role="tablist" aria-label="Trimestre">
+        {% for n in (1, 2, 3) %}
+        <button type="button" role="tab" @click="term = {{ n }}" :aria-selected="term === {{ n }}"
+          class="min-h-11 rounded-sm px-4 font-medium whitespace-nowrap"
+          :class="term === {{ n }} ? 'bg-primary text-white' : 'text-text hover:bg-primary-light'">{{ n }}º Trimestre</button>
+        {% endfor %}
+      </div>
+      <div x-show="term === 1">{{ button("Ver boletim do 1º trimestre", icon_name="file-text", href=url_for("prototype.report")) }}</div>
+    </div>
+
+    {% for n in (2, 3) %}
+    <div x-show="term === {{ n }}" x-cloak>
+      {% from "components/ui.html" import empty_state %}
+      {{ empty_state("O " ~ n ~ "º trimestre ainda não começou. As notas, a frequência e os comentários aparecem aqui quando forem lançados.", "calendar-check") }}
+    </div>
+    {% endfor %}
+
+    <div x-show="term === 1" class="grid content-start gap-6">
+    {% call card("Notas", padded=False) %}
     <ul>
       <li class="border-t border-border px-4 py-3 first:border-t-0 sm:px-5">
         <p class="font-semibold">Gemara <span class="text-sm font-normal text-gray">· {{ d.RABBIS["levi"] }}</span></p>
@@ -60,7 +78,7 @@
     </ul>
     {% endcall %}
 
-    {% call card("Frequência · " ~ d.TERM["name"]) %}
+    {% call card("Frequência") %}
     <dl class="grid grid-cols-2 gap-3 sm:grid-cols-4">
       {% for label, value in [("Aulas dadas", d.CLASSES_HELD), ("Faltas", absences), ("Atrasos", lates), ("Presença", presence|percent)] %}
       <div class="rounded-md bg-surface p-3"><dt class="text-sm text-gray">{{ label }}</dt><dd class="font-heading text-xl font-semibold tabular-nums">{{ value }}</dd></div>
@@ -81,6 +99,7 @@
     </div>
     {% endif %}
     {% endcall %}
+      </div>
   </div>
 </div>
 {% endblock %}

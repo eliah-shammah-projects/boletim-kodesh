@@ -349,7 +349,9 @@ Regras:
 - [x] Biblioteca de componentes Jinja (macros) baseada no protótipo
 
 Ajustes pedidos na revisão do protótipo:
-- [ ] Melhorar a divisão por trimestres nas telas (como escolher e mudar de trimestre, e o que aparece de cada um). Detalhar com o usuário
+- [x] Página do aluno com botões 1º, 2º e 3º Trimestre (notas, frequência e comentários de cada um)
+- [x] Botão Exportar em cada shiur, escolhendo o trimestre (ou o ano inteiro): notas, frequência, boletins e lista de alunos
+- [ ] Rever a divisão por trimestres nas outras telas (notas, frequência, boletim)
 
 **Pronto quando:** o protótipo foi aprovado e os componentes estão prontos para uso.
 

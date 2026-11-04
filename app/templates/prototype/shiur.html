@@ -3,6 +3,7 @@
 {% block title %}{{ c.name }}{% endblock %}
 {% block content %}
 {% call page_header(c.name, c.level ~ " · " ~ d.RABBIS[c.rabbi] ~ " · " ~ d.STUDENTS|length ~ " alunos", back_href=url_for("prototype.index"), back_label="Shiurim") %}
+  {{ button("Exportar", variant="secondary", icon_name="upload", attrs={"data-open-dialog": "exportar-shiur"}) }}
   {{ button("Inserir aluno", icon_name="plus", attrs={"data-open-dialog": "inserir-aluno"}) }}
 {% endcall %}
 
@@ -43,6 +44,34 @@
   </li>
   {% endfor %}
 </ul>
+
+{% from "components/forms.html" import select %}
+<dialog id="exportar-shiur" aria-labelledby="exportar-shiur-title"
+  class="m-auto w-[calc(100%-2rem)] max-w-md rounded-md border border-border bg-white p-0 text-text shadow-md">
+  <form method="dialog" class="grid gap-4 p-5 sm:p-6">
+    <div class="flex items-start justify-between gap-3">
+      <div>
+        <h2 id="exportar-shiur-title" class="text-xl">Exportar · {{ c.name }}</h2>
+        <p class="mt-1 text-gray">Escolha o trimestre e o que baixar.</p>
+      </div>
+      <button type="submit" class="-m-2 p-2 text-gray hover:text-text" aria-label="Fechar">{{ icon("x") }}</button>
+    </div>
+    {{ select("exportar-trimestre", "Trimestre", [("1", "1º Trimestre"), ("2", "2º Trimestre"), ("3", "3º Trimestre"), ("ano", "Ano inteiro (os 3 trimestres)")], selected="1") }}
+    {% for title, desc, ico in [
+      ("Notas (Excel)", "Todas as provas e notas do shiur.", "clipboard-list"),
+      ("Frequência (Excel)", "Aulas, faltas, atrasos e % de cada aluno.", "calendar-check"),
+      ("Boletins (PDF)", "Um PDF por aluno, num arquivo .zip.", "printer"),
+      ("Lista de alunos (Excel)", "Nomes, série e contato dos pais.", "users"),
+    ] %}
+    <button type="submit" value="{{ loop.index }}"
+      @click="$dispatch('notify', {kind: 'info', message: 'No sistema de verdade, o arquivo baixaria agora.'})"
+      class="flex min-h-16 items-center gap-3 rounded-md border border-border p-4 text-left hover:border-primary hover:bg-primary-light">
+      <span class="text-primary">{{ icon(ico, "size-6") }}</span>
+      <span><span class="block font-semibold">{{ title }}</span><span class="block text-sm text-gray">{{ desc }}</span></span>
+    </button>
+    {% endfor %}
+  </form>
+</dialog>
 
 {% set preset = c.slug %}
 {% include "prototype/_insert_student.html" %}
