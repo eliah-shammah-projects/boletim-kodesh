@@ -45,7 +45,7 @@
   "primary": ("bg-primary-light text-primary-dark", "info"),
 } -%}
 {%- set cls, ico = styles[kind] -%}
-<span class="inline-flex items-center gap-1.5 rounded-sm px-2 py-0.5 text-sm font-medium whitespace-nowrap {{ cls }}">{{ icon(ico, "size-4") }}{{ label }}</span>
+<span class="inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-sm font-medium whitespace-nowrap {{ cls }}">{{ icon(ico, "size-4") }}{{ label }}</span>
 {%- endmacro %}
 
 

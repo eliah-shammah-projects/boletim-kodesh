@@ -326,9 +326,9 @@ Regras:
 - As cores padrão do Tailwind estão desligadas (`app/static/src/app.css`): só existem estes tokens.
 - O azul é para o que importa: ação principal, navegação ativa, cabeçalho. O resto é branco e cinza.
 - Cores de status sempre acompanhadas de texto ou ícone, nunca só a cor.
-- Tipografia: Montserrat (geométrica, conversa com o logo) só em títulos. IBM Plex Sans no corpo e nas tabelas. IBM Plex Sans Hebrew para textos em hebraico.
+- Tipografia: Inter em tudo (decidido na revisão do protótipo, para um visual mais moderno). IBM Plex Sans Hebrew para textos em hebraico.
 - Números nas grades de notas com algarismos tabulares, alinhados.
-- Cantos levemente arredondados (4 a 6px), sombras quase imperceptíveis, bastante espaço em branco.
+- Cantos arredondados (8px e 12px), selos em pílula, sombras só no que flutua, bastante espaço em branco. Detalhes em `docs/DESIGN.md`.
 - O padrão de "Y" espalhados do logo pode aparecer, discreto, na tela de login e no cabeçalho do boletim. Em nenhum outro lugar.
 
 ---

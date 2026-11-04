@@ -2,6 +2,7 @@
 
 Valem para o projeto inteiro, antes de criar ou alterar qualquer tela, template, componente ou o boletim.
 Definidas pelo usuário em 2026-11-04. Não mudam a engenharia (stack, modelo de dados, testes).
+Atualizadas no mesmo dia, depois da revisão do protótipo: fonte Inter e cantos mais arredondados, para um visual mais moderno.
 
 ## Contexto
 
@@ -27,10 +28,11 @@ Tokens (em `app/static/src/app.css`, no `@theme` do Tailwind 4; nunca hex avulso
 | danger | #B42318 | Só para status |
 
 - O azul é para o que importa. A maior parte da tela é branca, com texto escuro e cinza.
-- Fontes: Montserrat só em títulos. IBM Plex Sans em todo o resto. IBM Plex Sans Hebrew para texto em hebraico, com `lang="he"` e `dir="rtl"` no elemento.
+- Fontes: Inter em tudo (títulos com peso 650 e letras um pouco mais juntas). IBM Plex Sans Hebrew para texto em hebraico, com `lang="he"` e `dir="rtl"` no elemento.
 - No máximo 5 tamanhos de fonte no app. Corpo com pelo menos 16px, nada abaixo de 14px.
 - Números em tabelas com `tabular-nums`, sempre alinhados do mesmo jeito.
-- Cantos de 4 a 6px. Sombras quase imperceptíveis, só no que flutua (menu aberto, modal).
+- Cantos de 8px (campos pequenos, abas) e 12px (botões, listas, seções, janelas). Selos de status em pílula. Sombras quase imperceptíveis, só no que flutua (menu aberto, modal).
+- Foto da yeshiva (`assets/Copia-de-IMG_6578-1.webp`) só na tela de login, com o azul por cima. Nunca atrás das telas de trabalho.
 - O padrão de "Y" do logo só aparece na tela de login e no cabeçalho do boletim, discreto.
 
 ## Princípios de UX
@@ -48,7 +50,7 @@ Tokens (em `app/static/src/app.css`, no `@theme` do Tailwind 4; nunca hex avulso
 
 ## Proibido (cara de app gerado por AI)
 
-Gradientes; emojis; tudo em cartões idênticos com raio grande e a mesma sombra; rótulos em CAIXA ALTA espaçada acima dos títulos; uma palavra do título em outra cor ou itálico; números decorativos (01, 02, 03) em conteúdo que não é sequência; textos juntados com ponto do meio só por estilo; seta "→" em botões; fonte monoespaçada para dados; cartões de "número grande com rótulo pequeno" só para enfeitar; animação de entrada em cada seção; hover em todos os cartões; ícone decorativo ao lado de cada título; roxo, verde-limão ou fundo creme.
+Gradientes; emojis; tudo em cartões idênticos com a mesma sombra; rótulos em CAIXA ALTA espaçada acima dos títulos; uma palavra do título em outra cor ou itálico; números decorativos (01, 02, 03) em conteúdo que não é sequência; textos juntados com ponto do meio só por estilo; seta "→" em botões; fonte monoespaçada para dados; cartões de "número grande com rótulo pequeno" só para enfeitar; animação de entrada em cada seção; hover em todos os cartões; ícone decorativo ao lado de cada título; roxo, verde-limão ou fundo creme.
 
 ## Textos da interface (português)
 
