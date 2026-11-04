@@ -61,6 +61,10 @@ Além disso:
 | Hospedagem e manutenção | Paga pela escola. Manutenção pelo desenvolvedor, remotamente |
 | Senhas | Sem "esqueci a senha" no início. O admin redefine |
 | Para depois | Autorizações detalhadas e features de AI |
+| Hospedagem (decidido na Fase 0) | Railway, com deploy a partir do GitHub. Sem AWS |
+| Ambiente local (Fase 0) | Só Python, sem Node e sem Docker no computador do desenvolvedor. Tailwind pelo `pytailwindcss`; HTMX e Alpine servidos pelo próprio app, sem CDN |
+| Testes de banco (Fase 0) | Rodam no GitHub Actions contra MySQL. Sem MySQL local, são pulados no computador |
+| Blueprint `main` (Fase 0) | Além dos 9 da lista: tela inicial (pendências) e `/healthz` para o monitoramento |
 
 ## 3. Stack
 
@@ -318,12 +322,12 @@ Regras:
 ## 7. Fases
 
 ### Fase 0: Setup
-- [ ] Estrutura: `app/` com app factory, `config.py`, `app/services/`, blueprints vazios (`auth`, `admin`, `students`, `classes`, `grades`, `attendance`, `files`, `imports`, `reports`)
-- [ ] `docker-compose.yml` com app, MySQL e MySQL de teste, todos em `utf8mb4_unicode_ci`
-- [ ] `.env.example`, Flask-Migrate, pytest contra MySQL, ruff
-- [ ] Tailwind (build no Docker), HTMX e Alpine.js
-- [ ] GitHub Actions com ruff + pytest
-- [ ] Teste que grava e lê do banco texto com acentos e com hebraico
+- [x] Estrutura: `app/` com app factory, `config.py`, `app/services/`, blueprints vazios (`auth`, `admin`, `students`, `classes`, `grades`, `attendance`, `files`, `imports`, `reports`)
+- [x] `docker-compose.yml` com app, MySQL e MySQL de teste, todos em `utf8mb4_unicode_ci`
+- [x] `.env.example`, Flask-Migrate, pytest contra MySQL, ruff
+- [x] Tailwind (build no Docker), HTMX e Alpine.js
+- [x] GitHub Actions com ruff + pytest
+- [x] Teste que grava e lê do banco texto com acentos e com hebraico
 
 ### Fase 1: Design e protótipo
 - [ ] Identidade visual da seção 6b configurada no Tailwind (cores, fontes, espaçamentos) e componentes (botões, tabelas, formulários, alertas, modais)

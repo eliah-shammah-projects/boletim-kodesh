@@ -47,7 +47,9 @@ Sistema de notas de kodesh de uma yeshiva. Plano completo e modelo de dados em `
 
 ## Comandos
 
-- `docker compose up` sobe app + MySQL
+- Local (sem Docker): `.venv/Scripts/ruff check .`, `.venv/Scripts/pytest` (testes de banco são pulados sem MySQL e rodam no GitHub Actions)
+- CSS: `tailwindcss -i app/static/src/app.css -o app/static/dist/app.css --minify` (com `TAILWINDCSS_VERSION=v4.3.4`)
+- `docker compose up` sobe app + MySQL (onde houver Docker, ex: CI)
 - `flask db migrate -m "..."` / `flask db upgrade`
 - `flask seed` dados fictícios
 - `flask create-admin`
