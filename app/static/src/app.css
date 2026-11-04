@@ -1,0 +1,3 @@
+/* Entrada do Tailwind. Os tokens da identidade visual (seção 6b) entram na Fase 1. */
+@import "tailwindcss";
+@source "../../templates";

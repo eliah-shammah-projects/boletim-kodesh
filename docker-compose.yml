@@ -57,5 +57,14 @@ services:
       db_test:
         condition: service_healthy
 
+  # Recompila o CSS a cada mudança nos templates.
+  tailwind:
+    build:
+      context: .
+      target: dev
+    command: tailwindcss -i app/static/src/app.css -o app/static/dist/app.css --watch=always
+    volumes:
+      - .:/app
+
 volumes:
   mysql_data:
