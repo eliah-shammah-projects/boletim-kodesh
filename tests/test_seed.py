@@ -33,45 +33,37 @@ def count(s, stmt):
     return s.scalar(select(func.count()).select_from(stmt.subquery()))
 
 
-def test_seed_years(seeded):
-    s, _ = seeded
+def test_seed_generates_what_the_plan_asks(seeded):
+    """O seed é lento: roda uma vez e confere tudo."""
+    s, summary = seeded
+    # years
     statuses = sorted(y.status.value for y in s.scalars(select(AcademicYear)))
     assert statuses == ["active", "archived"]
     assert get_active_year().name == "2027"
     assert all(len(y.terms) == 3 for y in s.scalars(select(AcademicYear)))
 
-
-def test_seed_classes_and_students(seeded):
-    s, summary = seeded
+    # classes and students
     active = get_active_year()
     assert count(s, select(KodeshClass).where(KodeshClass.academic_year_id == active.id)) == 6
     assert summary.students == 75
     assert count(s, select(StudentYear).where(StudentYear.academic_year_id == active.id)) == 75
 
-
-def test_seed_has_two_students_with_the_same_name(seeded):
-    s, _ = seeded
+    # has two students with the same name
     same = count(
         s, select(Student).where(Student.first_name == "Gabriel", Student.last_name == "Cohen")
     )
     assert same == 2
 
-
-def test_seed_has_rabbis_changing_between_terms(seeded):
-    s, _ = seeded
+    # has rabbis changing between terms
     assert count(s, select(ClassSubjectTerm)) > 0
 
-
-def test_seed_scores_have_decimals_and_absents(seeded):
-    s, _ = seeded
+    # scores have decimals and absents
     scores = list(s.scalars(select(AssessmentScore)))
     assert any(x.score is not None and x.score % 1 != 0 for x in scores)
     assert any(x.status == ScoreStatus.ABSENT for x in scores)
     assert any(x.status == ScoreStatus.EXEMPT for x in scores)
 
-
-def test_seed_has_one_class_transfer(seeded):
-    s, _ = seeded
+    # has one class transfer
     active = get_active_year()
     closed = count(
         s,
@@ -81,17 +73,10 @@ def test_seed_has_one_class_transfer(seeded):
     )
     assert closed == 1
 
-
-def test_seed_has_attendance_and_comments(seeded):
-    s, _ = seeded
+    # has attendance and comments
     assert count(s, select(TermAttendance)) > 0
     assert count(s, select(Comment).where(Comment.visibility == CommentVisibility.PUBLIC)) > 0
     assert count(s, select(Comment).where(Comment.visibility == CommentVisibility.INTERNAL)) > 0
-
-
-def test_seed_refuses_a_database_with_data(seeded):
-    with pytest.raises(SeedError, match="já tem dados"):
-        seed_demo()
 
 
 def test_seed_command_is_blocked_in_production(monkeypatch):
@@ -103,3 +88,11 @@ def test_seed_command_is_blocked_in_production(monkeypatch):
     result = app.test_cli_runner().invoke(args=["seed"])
     assert result.exit_code != 0
     assert "produção" in result.output
+
+
+def test_seed_refuses_a_database_with_data(db_session):
+    from tests.factories import YearFactory
+
+    YearFactory()
+    with pytest.raises(SeedError, match="já tem dados"):
+        seed_demo()

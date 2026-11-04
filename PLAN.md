@@ -363,11 +363,11 @@ Ajustes pedidos na revisão do protótipo:
 - [x] Migração inicial
 
 ### Fase 2b: Regras de domínio
-- [ ] `app/services/`: rabino efetivo da matéria, matrícula ativa, troca de turma, porcentagem de presença, conteúdo do boletim, travamento, limite de comentários, ano ativo e arquivado
-- [ ] Testes para cada regra da seção 4
+- [x] `app/services/`: rabino efetivo da matéria, matrícula ativa, troca de turma, porcentagem de presença, conteúdo do boletim, travamento, limite de comentários, ano ativo e arquivado
+- [x] Testes para cada regra da seção 4
 
 ### Fase 2c: Seed
-- [ ] `flask seed`: 1 ano ativo e 1 arquivado, 3 trimestres, 6 turmas, 75 alunos (com dois de nome igual), matérias, rabinos trocando de matéria entre trimestres, 2 a 4 provas por matéria, notas com decimal, ausentes, frequência, uma troca de turma
+- [x] `flask seed`: 1 ano ativo e 1 arquivado, 3 trimestres, 6 turmas, 75 alunos (com dois de nome igual), matérias, rabinos trocando de matéria entre trimestres, 2 a 4 provas por matéria, notas com decimal, ausentes, frequência, uma troca de turma
 
 ### Fase 3: Autenticação e permissões
 - [ ] Login/logout, `flask create-admin`, CRUD de usuários, redefinição de senha pelo admin
