@@ -22,6 +22,8 @@ Sistema de notas de kodesh de uma yeshiva. Plano completo e modelo de dados em `
 
 ## UX e UI
 
+- **Antes de criar ou alterar qualquer tela, template, componente ou o boletim, ler e seguir `docs/DESIGN.md`** (tokens, princípios, lista do proibido, textos, processo por tela com plano e wireframe aprovados antes de construir).
+
 - UX e UI são prioridade. Usar sempre os componentes (macros Jinja) da Fase 1. Não criar estilos avulsos.
 - Cores e fontes só pelos tokens da seção 6b do PLAN.md (azul do logo `#005A93`). Sem gradientes, sem emojis, sem enfeites.
 - Toda tela funciona em celular, tablet e computador.
