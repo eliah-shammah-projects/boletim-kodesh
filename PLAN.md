@@ -348,6 +348,9 @@ Regras:
 - [ ] Revisão do protótipo com o seu pai e um rabino, e ajustes
 - [x] Biblioteca de componentes Jinja (macros) baseada no protótipo
 
+Ajustes pedidos na revisão do protótipo:
+- [ ] Melhorar a divisão por trimestres nas telas (como escolher e mudar de trimestre, e o que aparece de cada um). Detalhar com o usuário
+
 **Pronto quando:** o protótipo foi aprovado e os componentes estão prontos para uso.
 
 ### Fase 2a: Modelos e migração
