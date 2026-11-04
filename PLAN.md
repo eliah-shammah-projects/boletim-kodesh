@@ -51,7 +51,7 @@ Além disso:
 | Troca de turma | Permitida no meio do ano |
 | Ano letivo | Nome civil (ex: 2027). Cada ano começa vazio. Ano fechado vai para o arquivo, só leitura. O cadastro do aluno continua entre os anos |
 | Nomes iguais | Cada aluno tem um cadastro único no sistema. A matrícula da secretaria é opcional: pode existir para alguns alunos e não para outros. Nome igual a outro aluno sempre pede confirmação |
-| Scans | Scan da prova por aluno, prova em branco e gabarito por prova. Só a equipe vê. Não vão no boletim. Guardados até 1 ano depois da formatura do aluno |
+| Scans | Scan da prova por aluno, prova em branco e gabarito por prova. Só a equipe vê. Não vão no boletim. Os scans dos alunos ficam só até o começo do ano letivo seguinte, quando são apagados (com confirmação do admin). Prova em branco e gabarito continuam |
 | Área laica | Fora do sistema de notas. Só um campo com a turma laica do aluno no ano. Boletim separado |
 | Remetente do email | Configurável numa tela de configurações do admin (email e nome do remetente), não fixo no código |
 | Pais | Sem acesso. Recebem o boletim em PDF por email (até dois emails por aluno) |
@@ -453,11 +453,11 @@ A partir daqui, cada fase termina com deploy.
 - [ ] Fechar o ano: confirmação, verificação de pendências (turmas não liberadas), status `archived`
 - [ ] Tela de arquivo: anos fechados, só leitura, com turmas, notas, frequência e boletins
 - [ ] Ficha do aluno com o histórico de todos os anos, ligada pela matrícula
-- [ ] Apagar scans 1 ano depois da formatura do aluno, com confirmação do admin
 - [ ] Visão por turma: status de lançamento (provas sem nota, alunos sem scan, frequência faltando)
 
 ### Fase 16: Abertura do ano novo
 - [ ] Criar o ano novo vazio
+- [ ] Apagar os scans dos alunos do ano anterior, com confirmação do admin (prova em branco e gabarito ficam)
 - [ ] Opção de copiar a estrutura do ano anterior (turmas, matérias, rabinos) como ponto de partida, tudo editável
 - [ ] Distribuir os alunos pela tela ou pela importação de Excel
 - [ ] Avançar a série escolar e marcar formandos como inativos
