@@ -359,8 +359,8 @@ Ajustes pedidos na revisão do protótipo:
 **Pronto quando:** o protótipo foi aprovado e os componentes estão prontos para uso.
 
 ### Fase 2a: Modelos e migração
-- [ ] Modelos SQLAlchemy da seção 4, com constraints, FKs e enums
-- [ ] Migração inicial
+- [x] Modelos SQLAlchemy da seção 4, com constraints, FKs e enums
+- [x] Migração inicial
 
 ### Fase 2b: Regras de domínio
 - [ ] `app/services/`: rabino efetivo da matéria, matrícula ativa, troca de turma, porcentagem de presença, conteúdo do boletim, travamento, limite de comentários, ano ativo e arquivado
