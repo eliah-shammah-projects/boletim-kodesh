@@ -480,7 +480,7 @@ A partir daqui, cada fase termina com deploy.
 ## 8. Pendências para confirmar com a direção
 
 - Um exemplo real da planilha de alunos (pode ser com nomes trocados), para definir o formato da importação. Virá depois; até lá, formato provisório
-- Logo: usar `assets/logo.webp` (vetorizar na Fase 1). Cabeçalho do boletim: logo e "Yeshiva Or Yossef" por ora; endereço e telefone talvez depois
+- Logo: `assets/logo.png` (colorido, fundo transparente) e `assets/logo-white.png` (branco, para fundo azul), tirados de oryossef.com.br. Vetorizar na Fase 1. Cabeçalho do boletim: logo e "Yeshiva Or Yossef" por ora; endereço e telefone talvez depois (site: Rua General Fernando V. C. Albuquerque, 1011, Granja Viana, Cotia - SP; (11) 4613-3440; contato@oryossef.com.br)
 - Endereço que envia os emails: definido pelo admin na tela de configurações, perto do envio
 - LGPD: comunicação aos pais sobre os dados guardados. Não por ora, mas obrigatório antes de entrar dado real
 
