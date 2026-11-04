@@ -12,6 +12,8 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='dist/app.css') }}">
   <script src="{{ url_for('static', filename='vendor/htmx.min.js') }}" defer></script>
   <script src="{{ url_for('static', filename='js/app.js') }}" defer></script>
+  {# Scripts da página: carregam antes do Alpine. #}
+  {% block scripts %}{% endblock %}
   <script src="{{ url_for('static', filename='vendor/alpine.min.js') }}" defer></script>
 </head>
 <body class="min-h-screen bg-surface text-text antialiased" hx-headers='{"X-CSRFToken": "{{ csrf_token() }}"}'>

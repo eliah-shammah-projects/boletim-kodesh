@@ -1,0 +1,110 @@
+{% extends "layouts/app.html" %}
+{% from "components/ui.html" import icon, button, alert, page_header %}
+{% block title %}Boletim · {{ d.REPORT.student.name }}{% endblock %}
+{% block content %}
+{% set r = d.REPORT %}
+{% set st = r.student %}
+
+<div class="print:hidden">
+  {% if review %}
+  {% call page_header("Revisão · Shiur Alef", "Confira os boletins antes de liberar. Depois de liberado, o shiur fica travado.", back_href=url_for("prototype.home_admin"), back_label="Início") %}
+    {{ button("Devolver para o rabino", variant="secondary", icon_name="chevron-left", attrs={"data-open-dialog": "devolver"}) }}
+    {{ button("Liberar boletins do shiur", icon_name="check", attrs={"data-open-dialog": "liberar"}) }}
+  {% endcall %}
+  {% else %}
+  {% call page_header("Boletim", st.name ~ " · " ~ d.TERM["name"] ~ " " ~ d.YEAR, back_href=url_for("prototype.shiur"), back_label="Shiur Alef") %}
+    {{ button("Imprimir", variant="secondary", icon_name="printer", attrs={"onclick": "window.print()"}) }}
+    {{ button("Baixar PDF", icon_name="file-text") }}
+  {% endcall %}
+  {% endif %}
+
+  <div class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+    {{ alert("warning", "Este é um rascunho. O boletim só pode ser enviado aos pais depois que a direção liberar o shiur.") }}
+  </div>
+  <div class="mb-4 flex items-center gap-2 overflow-x-auto pb-1">
+    {{ button("Aluno anterior", variant="ghost", size="sm", icon_name="chevron-left") }}
+    <span class="text-sm whitespace-nowrap text-gray">1 de {{ d.STUDENTS|length }}</span>
+    {{ button("Próximo aluno", variant="ghost", size="sm", icon_name="chevron-right") }}
+  </div>
+</div>
+
+{# Folha A4. No PDF de verdade (Fase 12) o mesmo layout é gerado pelo WeasyPrint. #}
+<article class="relative mx-auto max-w-[210mm] overflow-hidden bg-white p-6 shadow-md sm:p-12 print:max-w-none print:p-0 print:shadow-none" aria-label="Boletim">
+  <div class="pointer-events-none absolute inset-0 flex items-center justify-center" aria-hidden="true">
+    <span class="-rotate-30 font-heading text-6xl font-bold tracking-widest text-border/70 select-none sm:text-8xl">RASCUNHO</span>
+  </div>
+
+  <div class="relative">
+    <header class="flex items-center justify-between gap-6 border-b-2 border-primary pb-5">
+      <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Or Yossef Yeshiva College" class="h-16 w-auto sm:h-20">
+      <div class="text-right">
+        <p class="font-heading text-lg font-semibold text-primary-dark sm:text-xl">Yeshiva Or Yossef</p>
+        <p class="text-gray">Boletim de Kodesh</p>
+        <p class="font-semibold">{{ d.TERM["name"] }} · {{ d.YEAR }}</p>
+      </div>
+    </header>
+
+    <dl class="mt-6 grid grid-cols-2 gap-x-6 gap-y-3 sm:grid-cols-4">
+      <div class="col-span-2"><dt class="text-sm text-gray">Aluno</dt><dd class="font-semibold">{{ st.name }}{% if st.hebrew %} <span class="font-normal text-gray" lang="he" dir="rtl">{{ st.hebrew }}</span>{% endif %}</dd></div>
+      <div><dt class="text-sm text-gray">Série</dt><dd class="font-semibold">{{ st.grade }}</dd></div>
+      <div><dt class="text-sm text-gray">Shiur</dt><dd class="font-semibold">Shiur Alef</dd></div>
+      <div class="col-span-2 sm:col-span-4"><dt class="text-sm text-gray">Rabino da turma</dt><dd class="font-semibold">{{ d.RABBIS["levi"] }}</dd></div>
+    </dl>
+
+    <h2 class="mt-8 mb-3 text-base tracking-wide uppercase">Notas</h2>
+    <table class="w-full border-collapse text-left tabular-nums">
+      <thead>
+        <tr class="border-b border-border text-sm text-gray">
+          <th scope="col" class="py-2 pr-4 font-semibold">Matéria</th>
+          <th scope="col" class="py-2 pr-4 font-semibold">Avaliações</th>
+          <th scope="col" class="py-2 text-right font-semibold">Nota</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for subj in r.subjects %}
+        {% for name, score, max in subj.scores %}
+        <tr class="{{ 'border-t border-border' if loop.first else '' }}">
+          {% if loop.first %}
+          <td class="py-2 pr-4 align-top" rowspan="{{ subj.scores|length }}">
+            <span class="font-semibold">{{ subj.name }}</span>
+            <span class="block text-sm text-gray">{{ d.RABBIS[subj.teacher] }}</span>
+          </td>
+          {% endif %}
+          <td class="py-2 pr-4">{{ name }}</td>
+          <td class="py-2 text-right font-semibold">{{ format_score(score, max, d.SCALE_MAX) }}</td>
+        </tr>
+        {% endfor %}
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <h2 class="mt-8 mb-3 text-base tracking-wide uppercase">Frequência</h2>
+    {% set att = r.attendance %}
+    <dl class="grid grid-cols-2 gap-3 sm:grid-cols-4">
+      {% for label, value in [("Aulas dadas", att.held), ("Faltas", att.absences), ("Atrasos", att.lates), ("Presença", presence|percent)] %}
+      <div class="rounded-md bg-surface p-3"><dt class="text-sm text-gray">{{ label }}</dt><dd class="font-heading text-xl font-semibold tabular-nums">{{ value }}</dd></div>
+      {% endfor %}
+    </dl>
+
+    <h2 class="mt-8 mb-2 text-base tracking-wide uppercase">Comentário geral</h2>
+    <p class="leading-relaxed">{{ r.general }}</p>
+    <h2 class="mt-6 mb-2 text-base tracking-wide uppercase">Comportamento</h2>
+    <p class="leading-relaxed">{{ r.behavior }}</p>
+
+    <footer class="mt-14 flex justify-end">
+      <div class="w-64 text-center">
+        <div class="border-t border-text pt-2">
+          <p class="font-semibold">{{ d.RABBIS["levi"] }}</p>
+          <p class="text-sm text-gray">Rabino da turma</p>
+        </div>
+      </div>
+    </footer>
+  </div>
+</article>
+
+{% if review %}
+{% from "components/dialog.html" import confirm_dialog %}
+{{ confirm_dialog("devolver", "Devolver o Shiur Alef para o rabino?", "O rabino da turma volta a poder editar notas e comentários. Depois ele marca como pronto de novo.", "Devolver", danger=False) }}
+{{ confirm_dialog("liberar", "Liberar os boletins do Shiur Alef?", "O shiur fica travado para edição e os boletins podem ser enviados aos pais. Só o admin pode reabrir.", "Liberar", danger=False) }}
+{% endif %}
+{% endblock %}

@@ -1,0 +1,73 @@
+{% extends "layouts/app.html" %}
+{% from "components/ui.html" import icon, button, alert, page_header %}
+{% block title %}Frequência{% endblock %}
+{% block content %}
+{% call page_header("Frequência · Shiur Alef", d.TERM["name"] ~ " " ~ d.YEAR, back_href=url_for("prototype.shiur"), back_label="Shiur Alef") %}
+  {{ button("Baixar modelo Excel", variant="ghost", icon_name="file-text") }}
+  {{ button("Importar do Excel", variant="secondary", icon_name="upload") }}
+{% endcall %}
+
+{#
+  Presença % = (aulas dadas - faltas) / aulas dadas * 100, 1 casa. Atraso conta como presença.
+  Protótipo: o salvamento é simulado. No sistema, a % é calculada no servidor (app/services).
+#}
+<div x-data="{ classHeld: {{ d.CLASSES_HELD }}, pending: 0, errors: 0,
+    fmt(v) { return (Math.round(v * 10) / 10).toFixed(1).replace('.0', '').replace('.', ',') },
+    saved() { this.pending++; setTimeout(() => this.pending--, 350) } }" class="grid gap-4">
+
+  <div class="grid gap-4 rounded-md border border-border bg-white p-4 sm:grid-cols-[auto_1fr] sm:items-center sm:gap-6 sm:p-5">
+    <div class="flex flex-col gap-1.5">
+      <label for="class-held" class="font-medium">Aulas dadas no trimestre</label>
+      <input id="class-held" type="text" inputmode="numeric" x-model.number="classHeld" @change="saved()"
+        class="h-11 w-32 rounded-md border border-border px-3 text-right text-base tabular-nums focus:border-primary">
+    </div>
+    <p class="flex items-start gap-2 text-sm text-gray">{{ icon("info", "size-5 text-primary") }}
+      <span>Vale para todos os alunos. Se um aluno entrou no meio do trimestre, mude só a linha dele. <strong class="text-text">Atraso conta como presença.</strong></span>
+    </p>
+  </div>
+
+  <p class="flex items-center gap-2 font-medium" aria-live="polite" :class="errors > 0 ? 'text-danger' : (pending > 0 ? 'text-gray' : 'text-success')">
+    <span x-show="errors === 0 && pending === 0">{{ icon("circle-check") }}</span>
+    <span x-show="pending > 0 && errors === 0" x-cloak>{{ icon("loader-circle", "size-5 animate-spin") }}</span>
+    <span x-show="errors > 0" x-cloak>{{ icon("circle-x") }}</span>
+    <span x-text="errors > 0 ? 'Há linhas com erro, não salvas' : (pending > 0 ? 'Salvando…' : 'Tudo salvo')">Tudo salvo</span>
+  </p>
+
+  <div class="overflow-hidden rounded-md border border-border bg-white">
+    <div class="hidden grid-cols-[1fr_repeat(4,7.5rem)] gap-4 bg-surface px-5 py-3 text-sm font-semibold text-gray md:grid" aria-hidden="true">
+      <span>Aluno</span><span class="text-right">Aulas dadas</span><span class="text-right">Faltas</span><span class="text-right">Atrasos</span><span class="text-right">Presença</span>
+    </div>
+    <ul>
+      {% for r in rows %}
+      <li x-data="{ own: null, abs: {{ r.absences }}, late: {{ r.lates }}, bad: false, ready: false,
+            get held() { return this.own ?? classHeld },
+            get error() {
+              if (!(this.held > 0)) return 'Aulas dadas precisa ser maior que zero.';
+              if (this.abs > this.held) return 'Faltas não podem passar das aulas dadas.';
+              if (this.late > this.held) return 'Atrasos não podem passar das aulas dadas.';
+              return '';
+            },
+            get pct() { return this.error ? '–' : fmt((this.held - this.abs) / this.held * 100) + '%' },
+            check() { const now = !!this.error; if (now !== this.bad) { errors += now ? 1 : -1; this.bad = now } if (!now && this.ready) saved(); this.ready = true } }"
+          x-effect="held; check()"
+          class="grid grid-cols-3 gap-x-3 gap-y-2 border-t border-border px-4 py-3 first:border-t-0 md:grid-cols-[1fr_repeat(4,7.5rem)] md:items-center md:gap-4 md:px-5"
+          :class="error ? 'bg-danger-light' : ''">
+        <p class="col-span-2 font-semibold md:col-span-1">{{ r.name }}</p>
+        <p class="text-right md:order-1"><span class="text-sm text-gray md:hidden">Presença </span><span class="font-semibold tabular-nums" x-text="pct"></span></p>
+        {% for field, label in [("own", "Aulas dadas"), ("abs", "Faltas"), ("late", "Atrasos")] %}
+        <label class="flex flex-col gap-1 text-sm text-gray md:block">
+          <span class="md:sr-only">{{ label }}</span>
+          <input type="text" inputmode="numeric" autocomplete="off" aria-label="{{ label }}, {{ r.name }}"
+            {% if field == "own" %}:value="held" @change="own = ($event.target.value === '' ? null : Number($event.target.value)); check()"
+            {% else %}x-model.number="{{ field }}" @change="check()"{% endif %}
+            class="h-11 w-full rounded-sm border bg-white px-2 text-right text-base text-text tabular-nums focus:border-primary"
+            :class="error ? 'border-danger' : 'border-border'">
+        </label>
+        {% endfor %}
+        <p x-show="error" x-cloak x-text="error" class="order-last col-span-3 flex items-center gap-1.5 text-sm text-danger md:col-span-5" role="alert"></p>
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+</div>
+{% endblock %}

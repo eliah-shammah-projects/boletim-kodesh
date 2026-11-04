@@ -5,7 +5,7 @@ Só é registrado com PROTOTYPE_ENABLED (ligado em desenvolvimento e testes).
 
 from decimal import ROUND_HALF_UP, Decimal
 
-from flask import Blueprint, render_template, url_for
+from flask import Blueprint, render_template, request, url_for
 
 from app.blueprints.prototype import data
 
@@ -97,8 +97,11 @@ def attendance():
 @bp.get("/boletim")
 def report():
     att = data.REPORT["attendance"]
+    review = request.args.get("revisao") == "1"
     return _page(
         "report.html",
-        active="shiurim",
+        persona="admin" if review else "rabbi",
+        active="inicio" if review else "shiurim",
         presence=_percent(att["held"], att["absences"]),
+        review=review,
     )

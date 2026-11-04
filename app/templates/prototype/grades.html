@@ -1,0 +1,93 @@
+{% extends "layouts/app.html" %}
+{% from "components/ui.html" import icon, button, status, alert, page_header %}
+{% block title %}Notas · Gemara{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='js/grade-grid.js') }}" defer></script>{% endblock %}
+{% block content %}
+{% call page_header("Gemara · Shiur Alef", d.TERM["name"] ~ " · " ~ d.RABBIS["levi"], back_href=url_for("prototype.shiur"), back_label="Shiur Alef") %}
+  {{ button("Nova prova", variant="secondary", icon_name="plus") }}
+{% endcall %}
+
+<div x-data="gradeGrid()" class="grid gap-4">
+  <div class="flex flex-col gap-3 rounded-md border border-border bg-white p-4 sm:flex-row sm:items-center sm:justify-between">
+    <p class="flex items-start gap-2 text-sm text-gray">
+      {{ icon("info", "size-5 text-primary") }}
+      <span>Digite a nota e aperte <kbd class="rounded-sm border border-border bg-surface px-1.5 font-sans">Enter</kbd> para ir ao próximo aluno. Vírgula ou ponto. <strong class="text-text">A</strong> = ausente, <strong class="text-text">D</strong> = dispensado. Salva sozinho.</span>
+    </p>
+    <p class="flex shrink-0 items-center gap-2 font-medium" aria-live="polite"
+      :class="errors > 0 ? 'text-danger' : (pending > 0 ? 'text-gray' : 'text-success')">
+      <span x-show="errors === 0 && pending === 0">{{ icon("circle-check") }}</span>
+      <span x-show="pending > 0 && errors === 0" x-cloak>{{ icon("loader-circle", "size-5 animate-spin") }}</span>
+      <span x-show="errors > 0" x-cloak>{{ icon("circle-x") }}</span>
+      <span x-text="statusText">Todas as notas estão salvas</span>
+    </p>
+  </div>
+
+  {# Celular: escolher a prova. #}
+  <div class="flex gap-2 overflow-x-auto pb-1 md:hidden" role="tablist" aria-label="Escolher prova">
+    {% for a in d.ASSESSMENTS %}
+    <button type="button" role="tab" @click="col = {{ loop.index0 }}" :aria-selected="col === {{ loop.index0 }}"
+      class="min-h-11 shrink-0 rounded-md border px-4 font-medium"
+      :class="col === {{ loop.index0 }} ? 'border-primary bg-primary text-white' : 'border-border bg-white text-text'">{{ a.name }}</button>
+    {% endfor %}
+  </div>
+
+  <div class="overflow-x-auto rounded-md border border-border bg-white">
+    <table class="w-full border-collapse text-left tabular-nums">
+      <caption class="sr-only">Notas de Gemara do Shiur Alef</caption>
+      <thead class="bg-surface">
+        <tr>
+          <th scope="col" class="sticky left-0 z-10 bg-surface px-4 py-3 text-sm font-semibold text-gray">Aluno</th>
+          {% for a in d.ASSESSMENTS %}
+          {% set ns = namespace(missing=0) %}
+          {% for s in d.STUDENTS %}{% if d.SCORES[(s.id, a.id)] is none %}{% set ns.missing = ns.missing + 1 %}{% endif %}{% endfor %}
+          <th scope="col" class="px-4 py-3 align-bottom" :class="col === {{ loop.index0 }} ? '' : 'max-md:hidden'">
+            <span class="flex items-center gap-1 font-semibold text-text">{{ a.name }}<button type="button" class="rounded-sm p-1 text-gray hover:text-primary" aria-label="Editar {{ a.name }}">{{ icon("pencil", "size-4") }}</button></span>
+            <span class="block text-sm font-normal text-gray">{{ a.date }}{% if a.max != d.SCALE_MAX %} · máx. {{ a.max|decimal }}{% endif %}</span>
+            <span class="mt-1 flex flex-wrap gap-1">
+              {% if a.in_report %}{{ status("primary", "No boletim") }}{% else %}{{ status("neutral", "Fora do boletim") }}{% endif %}
+              {% if ns.missing %}{{ status("warning", ns.missing ~ " sem nota") }}{% endif %}
+            </span>
+          </th>
+          {% endfor %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for s in d.STUDENTS %}
+        {% set row = loop.index0 %}
+        <tr class="border-t border-border">
+          <th scope="row" class="sticky left-0 z-10 bg-white px-4 py-2 text-left font-medium whitespace-nowrap">{{ s.name }}</th>
+          {% for a in d.ASSESSMENTS %}
+          {% set v = d.SCORES[(s.id, a.id)] %}
+          {% set shown = "Ausente" if v == "A" else ("Dispensado" if v == "D" else (v|decimal if v is not none else "")) %}
+          {% set pages = d.SCANS[a.id].get(s.id) %}
+          <td class="px-4 py-2" :class="col === {{ loop.index0 }} ? '' : 'max-md:hidden'">
+            <div class="group" data-state="">
+            <div class="flex items-center gap-2">
+              <input type="text" inputmode="decimal" autocomplete="off" spellcheck="false"
+                value="{{ shown }}" data-saved="{{ shown }}" data-row="{{ row }}" data-col="{{ loop.index0 }}" data-max="{{ a.max }}"
+                aria-label="{{ a.name }}, {{ s.name }}"
+                class="h-11 w-28 rounded-sm border border-border bg-white px-2 text-right text-base tabular-nums placeholder:text-gray/60 focus:border-primary group-data-[state=error]:border-danger group-data-[state=error]:bg-danger-light group-data-[state=saving]:border-primary"
+                placeholder="–">
+              <span class="hidden text-success group-data-[state=saved]:inline" title="Salvo">{{ icon("check", "size-5") }}</span>
+              <span class="hidden text-gray group-data-[state=saving]:inline" title="Salvando">{{ icon("loader-circle", "size-5 animate-spin") }}</span>
+              <a href="{{ url_for('prototype.scans') }}" class="ml-auto flex size-11 items-center justify-center rounded-sm {{ 'text-primary hover:bg-primary-light' if pages else 'text-gray/60 hover:bg-surface hover:text-gray' }}"
+                aria-label="{{ 'Ver scan (' ~ pages ~ ' pág.)' if pages else 'Enviar scan' }} de {{ s.name }}">
+                {{ icon("file-text" if pages else "camera", "size-5") }}
+              </a>
+            </div>
+            <p data-error class="mt-1 hidden max-w-48 text-sm text-danger group-data-[state=error]:block"></p>
+            </div>
+          </td>
+          {% endfor %}
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <p class="flex flex-wrap items-center gap-4 text-sm text-gray">
+    <span class="flex items-center gap-1.5"><span class="text-primary">{{ icon("file-text", "size-4") }}</span>Tem scan</span>
+    <span class="flex items-center gap-1.5"><span class="text-gray/60">{{ icon("camera", "size-4") }}</span>Sem scan (toque para enviar)</span>
+  </p>
+</div>
+{% endblock %}

@@ -1,0 +1,84 @@
+{% extends "layouts/app.html" %}
+{% from "components/ui.html" import icon, button, status, alert, card, page_header %}
+{% from "components/table.html" import data_table %}
+{% block title %}Início{% endblock %}
+{% block content %}
+{% call page_header("Direção", d.TERM["name"] ~ " " ~ d.YEAR ~ " · faltam " ~ d.TERM["days_left"] ~ " dias para o fim do trimestre") %}
+  {{ button("Enviar boletins liberados", icon_name="send") }}
+{% endcall %}
+
+{% set ready = d.CLASSES|selectattr("status", "equalto", "ready_for_review")|list %}
+{% set approved = d.CLASSES|selectattr("status", "equalto", "approved")|list %}
+{% set late = d.CLASSES|selectattr("status", "equalto", "open")|selectattr("grades_done", "lt", 50)|list %}
+
+<div class="mb-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
+  {% for label, value, kind in [("Shiurim", d.CLASSES|length, "neutral"), ("Para revisar", ready|length, "primary"), ("Liberados", approved|length, "success"), ("Atrasados", late|length, "warning")] %}
+  <div class="rounded-md border border-border bg-white p-4 shadow-sm">
+    <p class="text-sm text-gray">{{ label }}</p>
+    <p class="mt-1 font-heading text-3xl font-semibold tabular-nums {{ {'primary': 'text-primary', 'success': 'text-success', 'warning': 'text-warning-dark', 'neutral': 'text-text'}[kind] }}">{{ value }}</p>
+  </div>
+  {% endfor %}
+</div>
+
+<div class="mb-6 grid gap-3">
+  {% for c in late %}
+  {{ alert("warning", c.name ~ " está atrasado: só " ~ c.grades_done ~ "% das notas lançadas.", title="Shiur atrasado") }}
+  {% endfor %}
+  {% for name in d.INACTIVE_RABBIS %}
+  {{ alert("info", name ~ " ainda não tem acesso ao sistema. Ative o usuário para ele poder lançar notas.", title="Rabino sem acesso") }}
+  {% endfor %}
+</div>
+
+{# Celular: um cartão por shiur. #}
+<section class="md:hidden">
+  <h2 class="mb-3 text-lg">Shiurim no trimestre</h2>
+  <ul class="grid gap-3">
+    {% for c in d.CLASSES %}
+    {% set kind, label = d.STATUS_LABELS[c.status] %}
+    <li class="rounded-md border border-border bg-white p-4 shadow-sm">
+      <div class="flex items-start justify-between gap-3">
+        <div>
+          <p class="font-semibold">{{ c.name }}</p>
+          <p class="text-sm text-gray">{{ d.RABBIS[c.rabbi] }} · {{ c.level }}</p>
+        </div>
+        {{ status(kind, label) }}
+      </div>
+      <dl class="mt-3 grid grid-cols-3 gap-2 text-sm">
+        <div><dt class="text-gray">Notas</dt><dd class="font-semibold tabular-nums">{{ c.grades_done }}%</dd></div>
+        <div><dt class="text-gray">Frequência</dt><dd class="font-semibold">{{ "Lançada" if c.attendance_done else "Falta" }}</dd></div>
+        <div><dt class="text-gray">Comentários</dt><dd class="font-semibold tabular-nums">{{ c.comments_done }}/{{ c.students }}</dd></div>
+      </dl>
+      <div class="mt-3">
+        {% if c.status == "ready_for_review" %}{{ button("Revisar", href=url_for('prototype.report', revisao=1), full=True) }}
+        {% else %}{{ button("Abrir shiur", variant="secondary", href=url_for('prototype.shiur'), full=True) }}{% endif %}
+      </div>
+    </li>
+    {% endfor %}
+  </ul>
+</section>
+
+{# Computador: tabela. #}
+<div class="hidden md:block">
+{% call card("Shiurim no trimestre", padded=False) %}
+<div class="p-4 sm:p-5">
+{% call data_table(["Shiur", "Rabino da turma", ("Notas", "right"), "Frequência", ("Comentários", "right"), "Situação", ""], caption="Situação de cada shiur") %}
+  {% for c in d.CLASSES %}
+  {% set kind, label = d.STATUS_LABELS[c.status] %}
+  <tr>
+    <td><a href="{{ url_for('prototype.shiur') }}" class="font-semibold text-primary hover:text-primary-dark">{{ c.name }}</a><span class="block text-sm text-gray">{{ c.level }} · {{ c.students }} alunos</span></td>
+    <td class="whitespace-nowrap">{{ d.RABBIS[c.rabbi] }}</td>
+    <td class="text-right">{{ c.grades_done }}%</td>
+    <td>{% if c.attendance_done %}<span class="inline-flex items-center gap-1 text-success">{{ icon("check", "size-4") }}Lançada</span>{% else %}<span class="inline-flex items-center gap-1 text-warning-dark">{{ icon("clock", "size-4") }}Falta</span>{% endif %}</td>
+    <td class="text-right">{{ c.comments_done }}/{{ c.students }}</td>
+    <td>{{ status(kind, label) }}</td>
+    <td class="text-right">
+      {% if c.status == "ready_for_review" %}{{ button("Revisar", size="sm", href=url_for('prototype.report', revisao=1)) }}
+      {% else %}{{ button("Abrir", variant="ghost", size="sm", href=url_for('prototype.shiur')) }}{% endif %}
+    </td>
+  </tr>
+  {% endfor %}
+{% endcall %}
+</div>
+{% endcall %}
+</div>
+{% endblock %}

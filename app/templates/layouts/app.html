@@ -8,7 +8,7 @@
 
 {% block body %}
 {% set nav = nav_items|default([]) %}
-<header class="bg-primary text-white">
+<header class="bg-primary text-white print:hidden">
   <div class="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-2 sm:px-6">
     <a href="{{ home_href|default('/') }}" class="flex min-h-11 items-center">
       <img src="{{ url_for('static', filename='img/logo-white.png') }}" alt="Or Yossef Yeshiva College" class="h-12 w-auto sm:h-14">
@@ -27,7 +27,7 @@
   </div>
 </header>
 
-<main class="mx-auto max-w-6xl px-4 pt-6 pb-28 sm:px-6 md:pb-12">
+<main class="mx-auto max-w-6xl px-4 pt-6 pb-28 sm:px-6 md:pb-12 print:max-w-none print:p-0">
   {% with messages = get_flashed_messages(with_categories=true) %}
   {% if messages %}
   {% from "components/ui.html" import alert %}
@@ -40,7 +40,7 @@
 </main>
 
 {% if nav %}
-<nav class="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-white pb-[env(safe-area-inset-bottom)] md:hidden" aria-label="Principal">
+<nav class="print:hidden fixed inset-x-0 bottom-0 z-40 border-t border-border bg-white pb-[env(safe-area-inset-bottom)] md:hidden" aria-label="Principal">
   <ul class="grid grid-cols-{{ nav|length }}">
     {% for item in nav %}
     <li>

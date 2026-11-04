@@ -1,0 +1,75 @@
+{% extends "layouts/app.html" %}
+{% from "components/ui.html" import icon, button, status, alert, card, page_header %}
+{% block title %}Scans · Gemara{% endblock %}
+{% block content %}
+{{ page_header("Scans · Prova 1", "Gemara · Shiur Alef · " ~ d.TERM["name"], back_href=url_for("prototype.grades"), back_label="Notas de Gemara") }}
+
+{% set a = d.ASSESSMENTS[0] %}
+{% set scans = d.SCANS[a.id] %}
+{% set docs = d.ASSESSMENT_DOCS[a.id] %}
+
+<div class="mb-6">{{ alert("info", "Os scans ficam só no sistema. Não vão para o boletim nem para os pais.") }}</div>
+
+{#
+  Cada linha: um <label> com um campo de arquivo escondido. No celular, "capture" abre a câmera direto.
+  Depois da foto, o envio começa sozinho: Fotografar -> tirar a foto -> confirmar = 3 toques.
+  Protótipo: o envio é simulado.
+#}
+{% macro upload_row(title, subtitle, pages, input_id) -%}
+<li x-data="{ pages: {{ pages or 0 }}, state: '', progress: 0,
+      upload(files) {
+        const n = files.length;
+        if (!n) return;
+        this.state = 'uploading'; this.progress = 0;
+        const timer = setInterval(() => {
+          this.progress = Math.min(this.progress + 20, 100);
+          if (this.progress === 100) {
+            clearInterval(timer);
+            this.pages += n; this.state = 'done';
+            this.$dispatch('notify', {kind: 'success', message: this.$root.dataset.title + ': ' + (n === 1 ? '1 página enviada' : n + ' páginas enviadas')});
+          }
+        }, 150);
+      } }"
+  data-title="{{ title }}" class="flex flex-col gap-3 border-t border-border p-4 first:border-t-0 sm:flex-row sm:items-center sm:px-5">
+  <div class="flex-1">
+    <p class="font-semibold">{{ title }}</p>
+    {% if subtitle %}<p class="text-sm text-gray">{{ subtitle }}</p>{% endif %}
+    <p class="mt-1" x-show="state !== 'uploading'">
+      <span x-show="pages > 0" class="inline-flex items-center gap-1.5 rounded-sm bg-success-light px-2 py-0.5 text-sm font-medium text-success">{{ icon("circle-check", "size-4") }}<span x-text="pages === 1 ? 'Enviado · 1 página' : 'Enviado · ' + pages + ' páginas'"></span></span>
+      <span x-show="pages === 0">{{ status("warning", "Falta enviar") }}</span>
+    </p>
+    <div x-show="state === 'uploading'" x-cloak class="mt-2" role="status">
+      <p class="text-sm text-gray">Enviando… <span x-text="progress + '%'"></span></p>
+      <div class="mt-1 h-2 w-full max-w-60 overflow-hidden rounded-full bg-primary-light"><div class="h-full bg-primary transition-all" :style="'width:' + progress + '%'"></div></div>
+    </div>
+  </div>
+  <div class="flex gap-2">
+    <button type="button" x-show="pages > 0" class="inline-flex min-h-11 items-center gap-2 rounded-md px-3 font-medium text-primary hover:bg-primary-light">{{ icon("eye") }}<span>Ver</span></button>
+    <label for="{{ input_id }}" class="inline-flex min-h-11 flex-1 cursor-pointer items-center justify-center gap-2 rounded-md px-4 font-medium sm:flex-none"
+      :class="pages > 0 ? 'border border-border bg-white text-primary-dark hover:bg-primary-light' : 'bg-primary text-white hover:bg-primary-dark'">
+      {{ icon("camera") }}<span x-text="pages > 0 ? 'Adicionar página' : 'Fotografar'">Fotografar</span>
+    </label>
+    <input id="{{ input_id }}" type="file" accept="image/*,application/pdf" capture="environment" multiple class="sr-only"
+      @change="upload($event.target.files); $event.target.value = ''">
+  </div>
+</li>
+{%- endmacro %}
+
+<div class="grid gap-6">
+  {% call card("Prova em branco e gabarito", "Para consulta da equipe.", padded=False) %}
+  <ul>
+    {{ upload_row("Prova em branco", None, 1 if docs.get("blank") else 0, "doc-blank") }}
+    {{ upload_row("Gabarito", None, 1 if docs.get("key") else 0, "doc-key") }}
+  </ul>
+  {% endcall %}
+
+  {% set missing = d.STUDENTS|rejectattr("id", "in", scans.keys()|list)|list %}
+  {% call card("Prova de cada aluno", missing|length ~ " de " ~ d.STUDENTS|length ~ " sem scan · os que faltam aparecem primeiro", padded=False) %}
+  <ul>
+    {% for s in missing + (d.STUDENTS|selectattr("id", "in", scans.keys()|list)|list) %}
+    {{ upload_row(s.name, "Nota: " ~ (d.SCORES[(s.id, a.id)]|decimal if d.SCORES[(s.id, a.id)] not in ("A", "D", None) else ("Ausente" if d.SCORES[(s.id, a.id)] == "A" else "–")), scans.get(s.id), "scan-" ~ s.id) }}
+    {% endfor %}
+  </ul>
+  {% endcall %}
+</div>
+{% endblock %}
