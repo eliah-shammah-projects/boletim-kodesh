@@ -18,6 +18,8 @@ def create_app(config_name: str | None = None) -> Flask:
     if not app.config.get("SQLALCHEMY_DATABASE_URI"):
         raise RuntimeError("DATABASE_URL não definida.")
 
+    from app import models  # noqa: F401  registra as tabelas no metadata
+
     db.init_app(app)
     migrate.init_app(app, db)
     csrf.init_app(app)

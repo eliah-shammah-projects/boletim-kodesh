@@ -14,3 +14,7 @@ def test_existing_query_string_is_kept():
 def test_explicit_charset_is_not_duplicated():
     url = "mysql+pymysql://u:p@host/db?charset=utf8mb4"
     assert normalize_db_url(url) == url
+
+
+def test_non_mysql_url_is_left_alone():
+    assert normalize_db_url("sqlite:///x.db") == "sqlite:///x.db"

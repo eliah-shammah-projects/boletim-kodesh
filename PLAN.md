@@ -129,7 +129,7 @@ student_years                          -- o aluno naquele ano
 
 kodesh_classes                         -- turma de kodesh daquele ano
   id, academic_year_id, name, level,
-  homeroom_rabbi_id (fk users),        -- rabino da turma (dá Gemara)
+  homeroom_rabbi_id (fk users, nullable só para shiur novo da importação sem rabino ativo),
   color,                               -- cor de fita, escolhida pelo rabino numa paleta fixa (pedido do usuário)
   sort_order
 
@@ -187,7 +187,7 @@ class_term_status                      -- fluxo de revisão por turma e trimestr
   unique(kodesh_class_id, term_id)
 
 report_deliveries                      -- envio do boletim por email
-  id, enrollment_id, term_id, recipient_email,
+  id, enrollment_id, term_id (nullable: vazio = boletim anual), recipient_email,
   status [queued|sent|failed], error, sent_at, sent_by
 
 documents                              -- documentos gerais do aluno

@@ -12,7 +12,7 @@ def normalize_db_url(url: str | None) -> str | None:
 
     Aceita URLs no formato `mysql://...` (como o Railway fornece).
     """
-    if not url:
+    if not url or not url.startswith("mysql"):
         return url
     if url.startswith("mysql://"):
         url = "mysql+pymysql://" + url.removeprefix("mysql://")
