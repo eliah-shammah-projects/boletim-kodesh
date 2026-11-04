@@ -7,8 +7,17 @@
   {{ button("Inserir aluno", icon_name="plus", attrs={"data-open-dialog": "inserir-aluno"}) }}
 {% endcall %}
 
+<div x-data="{ term: 1 }" class="mb-8">
+<div class="mb-4">{% include "prototype/_term_tabs.html" %}</div>
+{% for n in (2, 3) %}
+<div x-show="term === {{ n }}" x-cloak class="mb-2">
+  {% from "components/ui.html" import empty_state %}
+  {% call empty_state("O " ~ n ~ "º trimestre ainda não começou. As provas e notas deste trimestre aparecem aqui.", "calendar-check") %}{% endcall %}
+</div>
+{% endfor %}
+<div x-show="term === 1">
 <h2 class="mb-3 text-lg">Matérias</h2>
-<ul class="mb-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+<ul class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
   {% for s in d.SUBJECTS %}
   <li>
     <a href="{{ url_for('prototype.grades') }}" class="flex h-full flex-col gap-1 rounded-md border border-border bg-white p-4 shadow-sm hover:border-primary hover:bg-primary-light">
@@ -22,6 +31,8 @@
   </li>
   {% endfor %}
 </ul>
+</div>
+</div>
 
 <div class="mb-3 flex flex-wrap items-center justify-between gap-3">
   <h2 class="text-lg">Alunos</h2>

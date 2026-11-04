@@ -3,11 +3,20 @@
 {% block title %}Notas · Gemara{% endblock %}
 {% block scripts %}<script src="{{ url_for('static', filename='js/grade-grid.js') }}" defer></script>{% endblock %}
 {% block content %}
-{% call page_header("Gemara · Shiur Alef", d.TERM["name"] ~ " · " ~ d.RABBIS["levi"], back_href=url_for("prototype.shiur"), back_label="Shiur Alef") %}
+<div x-data="{ term: 1 }">
+{% call page_header("Gemara · Shiur Alef", d.RABBIS["levi"], back_href=url_for("prototype.shiur"), back_label="Shiur Alef") %}
   {{ button("Nova prova", icon_name="plus", attrs={"data-open-dialog": "nova-prova"}) }}
 {% endcall %}
 
-<div x-data="gradeGrid()" class="grid gap-4">
+<div class="grid gap-4">
+<div>{% include "prototype/_term_tabs.html" %}</div>
+{% for n in (2, 3) %}
+<div x-show="term === {{ n }}" x-cloak>
+  {% from "components/ui.html" import empty_state %}
+  {% call empty_state("Nenhuma prova de Gemara no " ~ n ~ "º trimestre ainda.", "clipboard-list") %}{{ button("Criar a primeira prova", icon_name="plus", attrs={"data-open-dialog": "nova-prova"}) }}{% endcall %}
+</div>
+{% endfor %}
+<div x-show="term === 1" x-data="gradeGrid()" class="grid gap-4">
   <div class="flex flex-col gap-3 rounded-md border border-border bg-white p-4 sm:flex-row sm:items-center sm:justify-between">
     <p class="flex items-start gap-2 text-sm text-gray">
       {{ icon("info", "size-5 text-primary") }}
@@ -90,15 +99,17 @@
     <span class="flex items-center gap-1.5"><span class="text-gray/60">{{ icon("camera", "size-4") }}</span>Sem scan (toque para enviar)</span>
   </p>
 </div>
+</div>
 {% from "components/forms.html" import text_input %}
 <dialog id="nova-prova" aria-labelledby="nova-prova-title"
   class="m-auto w-[calc(100%-2rem)] max-w-md rounded-md border border-border bg-white p-0 text-text shadow-md">
   <form method="dialog" class="grid gap-5 p-5 sm:p-6" x-data="{ name: '' }"
-    @submit="if ($event.submitter && $event.submitter.value === 'save') $dispatch('notify', {kind: 'success', message: (name || 'Prova') + ' criada. A coluna aparece na grade.'})">
+    @submit="if ($event.submitter && $event.submitter.value === 'save') $dispatch('notify', {kind: 'success', message: (name || 'Prova') + ' criada no ' + term + 'º trimestre.'})">
     <div class="flex items-start justify-between gap-3">
       <div>
         <h2 id="nova-prova-title" class="text-xl">Nova prova</h2>
-        <p class="mt-1 text-gray">Gemara · Shiur Alef · {{ d.TERM["name"] }}</p>
+        <p class="mt-1 text-gray">Gemara · Shiur Alef</p>
+        <p class="mt-2 inline-flex items-center gap-1.5 rounded-sm bg-primary-light px-2 py-1 font-semibold text-primary-dark">{{ icon("calendar-check", "size-4") }}Vai para o <span x-text="term + 'º Trimestre'">1º Trimestre</span></p>
       </div>
       <button type="submit" value="cancel" formnovalidate class="-m-2 p-2 text-gray hover:text-text" aria-label="Fechar">{{ icon("x") }}</button>
     </div>
@@ -117,4 +128,5 @@
     </div>
   </form>
 </dialog>
+</div>
 {% endblock %}

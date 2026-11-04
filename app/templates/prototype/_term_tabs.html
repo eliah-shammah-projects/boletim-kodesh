@@ -1,0 +1,8 @@
+{# Botões 1º / 2º / 3º Trimestre. Precisa de um x-data com `term` em volta. #}
+<div class="inline-grid grid-cols-3 gap-1 rounded-md border border-border bg-white p-1" role="tablist" aria-label="Trimestre">
+  {% for n in (1, 2, 3) %}
+  <button type="button" role="tab" @click="term = {{ n }}" :aria-selected="term === {{ n }}"
+    class="min-h-11 rounded-sm px-3 font-medium whitespace-nowrap sm:px-4"
+    :class="term === {{ n }} ? 'bg-primary text-white' : 'text-text hover:bg-primary-light'">{{ n }}º Trimestre</button>
+  {% endfor %}
+</div>

@@ -351,7 +351,8 @@ Regras:
 Ajustes pedidos na revisão do protótipo:
 - [x] Página do aluno com botões 1º, 2º e 3º Trimestre (notas, frequência e comentários de cada um)
 - [x] Botão Exportar em cada shiur, escolhendo o trimestre (ou o ano inteiro): notas, frequência, boletins e lista de alunos
-- [ ] Rever a divisão por trimestres nas outras telas (notas, frequência, boletim)
+- [x] Botões de trimestre no shiur e na grade de notas; a janela "Nova prova" mostra em qual trimestre a prova entra
+- [ ] Rever a divisão por trimestres na frequência e no boletim
 
 **Pronto quando:** o protótipo foi aprovado e os componentes estão prontos para uso.
 
