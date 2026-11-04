@@ -90,6 +90,22 @@ CLASSES = [
     },
 ]
 
+# Paleta das cores de fita dos shiurim. Escolhidas para combinar entre si e com o azul do logo,
+# todas com contraste suficiente para texto branco.
+SHIUR_COLORS = {
+    "azul": ("Azul", "#2F6FA3"),
+    "verde": ("Verde", "#2E7D4F"),
+    "vinho": ("Vinho", "#8E2C48"),
+    "laranja": ("Laranja", "#B4561F"),
+    "roxo": ("Roxo", "#6B4FA0"),
+    "dourado": ("Dourado", "#8F6B12"),
+    "petroleo": ("Petróleo", "#1F6F73"),
+    "grafite": ("Grafite", "#4A5560"),
+}
+_COLORS = ["azul", "vinho", "verde", "laranja", "roxo", "petroleo"]
+for _c, _color in zip(CLASSES, _COLORS, strict=True):
+    _c["color"] = _color
+
 CLASS_OPTIONS = [(c["slug"], c["name"]) for c in CLASSES]
 
 STATUS_LABELS = {

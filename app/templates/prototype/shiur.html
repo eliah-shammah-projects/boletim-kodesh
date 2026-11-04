@@ -2,7 +2,11 @@
 {% from "components/ui.html" import icon, button, status, page_header %}
 {% block title %}{{ c.name }}{% endblock %}
 {% block content %}
-{% call page_header(c.name, c.level ~ " · " ~ d.RABBIS[c.rabbi] ~ " · " ~ d.STUDENTS|length ~ " alunos", back_href=url_for("prototype.index"), back_label="Shiurim") %}
+<div x-data="{ color: '{{ d.SHIUR_COLORS[c.color][1] }}' }">
+{% call page_header(c.name, c.level ~ " · " ~ d.RABBIS[c.rabbi] ~ " · " ~ d.STUDENTS|length ~ " alunos", back_href=url_for("prototype.index"), back_label="Shiurim", accent="color") %}
+  <button type="button" data-open-dialog="cor-shiur" class="inline-flex min-h-11 items-center gap-2 rounded-md border border-border bg-white px-4 font-medium text-primary-dark hover:bg-primary-light">
+    <span class="size-4 rounded-full" :style="'background:' + color"></span>Cor
+  </button>
   {{ button("Exportar", variant="secondary", icon_name="upload", attrs={"data-open-dialog": "exportar-shiur"}) }}
   {{ button("Inserir aluno", icon_name="plus", attrs={"data-open-dialog": "inserir-aluno"}) }}
 {% endcall %}
@@ -84,6 +88,19 @@
   </form>
 </dialog>
 
+<dialog id="cor-shiur" aria-labelledby="cor-shiur-title"
+  class="m-auto w-[calc(100%-2rem)] max-w-md rounded-md border border-border bg-white p-0 text-text shadow-md">
+  <form method="dialog" class="grid gap-5 p-5 sm:p-6" @submit="$dispatch('notify', {kind: 'success', message: 'Cor do {{ c.name }} salva.'})">
+    <div class="flex items-start justify-between gap-3">
+      <h2 id="cor-shiur-title" class="text-xl">Cor do {{ c.name }}</h2>
+    </div>
+    <p class="text-gray">Aparece nos cartões e nas telas do shiur, para reconhecer de longe.</p>
+    {% include "prototype/_color_picker.html" %}
+    <div class="flex justify-end">{{ button("Pronto", type="submit", icon_name="check") }}</div>
+  </form>
+</dialog>
+
 {% set preset = c.slug %}
 {% include "prototype/_insert_student.html" %}
+</div>
 {% endblock %}

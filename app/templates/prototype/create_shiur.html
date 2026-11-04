@@ -13,6 +13,7 @@
     {{ text_input("nome", "Nome do shiur", required=True, placeholder="Ex: Shiur Zayin") }}
     {{ select("nivel", "Nível", [("8", "8º ano"), ("9", "9º ano"), ("10", "1º colegial"), ("11", "2º colegial"), ("12", "3º colegial")]) }}
     <div class="sm:col-span-2">{{ select("rabino", "Rabino da turma", rabbis, hint="Dá Gemara e escreve os comentários do boletim.", required=True) }}</div>
+    <div class="sm:col-span-2" x-data="{ color: '{{ d.SHIUR_COLORS['azul'][1] }}' }">{% include "prototype/_color_picker.html" %}</div>
   </div>
   {% endcall %}
 

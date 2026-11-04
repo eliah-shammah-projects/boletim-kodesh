@@ -85,13 +85,15 @@
   Título da página, com link de voltar opcional.
   Ações à direita: {% call page_header("Título") %} botões {% endcall %}
 #}
-{% macro page_header(title, subtitle=None, back_href=None, back_label="Voltar") -%}
+{#  accent: expressão Alpine com uma cor (ex: a cor de fita do shiur), mostrada como faixa acima do título. #}
+{% macro page_header(title, subtitle=None, back_href=None, back_label="Voltar", accent=None) -%}
 <div class="mb-8">
   {% if back_href %}
   <a href="{{ back_href }}" class="-ml-1 mb-1 inline-flex min-h-11 items-center gap-1 text-sm font-medium text-gray hover:text-primary">{{ icon("chevron-left", "size-4") }}{{ back_label }}</a>
   {% endif %}
   <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
     <div>
+      {% if accent %}<span class="mb-3 block h-1.5 w-14 rounded-full" :style="'background:' + {{ accent }}" aria-hidden="true"></span>{% endif %}
       <h1 class="text-2xl sm:text-[2rem] sm:leading-tight">{{ title }}</h1>
       {% if subtitle %}<p class="mt-2 text-gray">{{ subtitle }}</p>{% endif %}
     </div>

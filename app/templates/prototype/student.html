@@ -18,7 +18,7 @@
         ("Turma laica", st.secular),
         ("Matrícula da secretaria", "—"),
       ] %}
-      <div><dt class="text-sm text-gray">{{ label }}</dt><dd class="font-medium">{% if loop.first and st.hebrew %}<span lang="he" dir="rtl">{{ value }}</span>{% else %}{{ value }}{% endif %}</dd></div>
+      <div><dt class="text-sm text-gray">{{ label }}</dt><dd class="font-medium">{% if loop.first and st.hebrew %}<span lang="he" dir="rtl">{{ value }}</span>{% elif label == "Shiur" %}<span class="inline-flex items-center gap-2"><span class="size-3 rounded-full" style="background: {{ d.SHIUR_COLORS[d.CLASSES[0].color][1] }}"></span>{{ value }}</span>{% else %}{{ value }}{% endif %}</dd></div>
       {% endfor %}
     </dl>
     {% endcall %}
