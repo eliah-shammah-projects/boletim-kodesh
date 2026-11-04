@@ -39,19 +39,21 @@ Além disso:
 | Usuários | Rabinos usam celular e computador, com familiaridade média com tecnologia |
 | Tela inicial | Lista de pendências de cada usuário, com atalho direto para resolver cada uma |
 | Períodos | Trimestres, criados por ano letivo (padrão 3, editável) |
-| Escala | Definida por ano (ex: 0 a 10). Notas com até 1 casa decimal. Cada prova pode ter nota máxima própria |
+| Escala | Definida por ano, padrão 0 a 10. Notas com até 1 casa decimal. Cada prova pode ter nota máxima própria |
 | Notas | Várias provas por matéria no trimestre. Não existe nota final manual |
-| Boletim | Um formato só: cada matéria lista as provas que o rabino marcou para o boletim (ex: `Gemara: Prova 1 - 10 / Prova 2 - 6.6`) |
+| Boletim | Cada matéria lista as provas que o rabino marcou para o boletim (ex: `Gemara: Prova 1 - 10 / Prova 2 - 6.6`). Só as notas, sem média |
+| Boletim anual | Sim: além do boletim de cada trimestre, um boletim de fim de ano com os 3 trimestres |
 | Recuperação e segunda chamada | É mais uma prova. O rabino escolhe o que vai para o boletim |
 | Rabino da turma | Um por turma, dá Gemara e é o responsável pela turma |
 | Rabinos das matérias | Cada matéria tem seu rabino, que pode mudar a cada trimestre |
 | Comentários no boletim | Só o rabino da turma (e a direção) escreve: um comentário geral e um de comportamento por aluno por trimestre |
-| Frequência | Por aluno e trimestre: aulas dadas, faltas, atrasos e % de presença. Manual ou por Excel |
+| Frequência | Por aluno e trimestre, uma só para a turma inteira (não por matéria): aulas dadas, faltas, atrasos e % de presença. Atraso conta como presença. Manual ou por Excel |
 | Troca de turma | Permitida no meio do ano |
-| Ano letivo | Cada ano começa vazio. Ano fechado vai para o arquivo, só leitura. O cadastro do aluno continua entre os anos |
-| Nomes iguais | Cada aluno tem um cadastro único no sistema (com a matrícula da secretaria, se existir). Nome igual a outro aluno sempre pede confirmação |
-| Scans | Scan da prova por aluno, prova em branco e gabarito por prova. Só a equipe vê. Não vão no boletim |
+| Ano letivo | Nome civil (ex: 2027). Cada ano começa vazio. Ano fechado vai para o arquivo, só leitura. O cadastro do aluno continua entre os anos |
+| Nomes iguais | Cada aluno tem um cadastro único no sistema. A matrícula da secretaria é opcional: pode existir para alguns alunos e não para outros. Nome igual a outro aluno sempre pede confirmação |
+| Scans | Scan da prova por aluno, prova em branco e gabarito por prova. Só a equipe vê. Não vão no boletim. Guardados até 2 anos depois da formatura do aluno |
 | Área laica | Fora do sistema de notas. Só um campo com a turma laica do aluno no ano. Boletim separado |
+| Remetente do email | Configurável numa tela de configurações do admin (email e nome do remetente), não fixo no código |
 | Pais | Sem acesso. Recebem o boletim em PDF por email (até dois emails por aluno) |
 | Revisão | O rabino da turma marca como pronta, a direção revisa e libera. Só boletim liberado é enviado |
 | Criar shiur | Botão no começo do ano: nome do shiur, rabino da turma, matérias com seus rabinos e alunos, tudo numa tela |
@@ -195,6 +197,9 @@ import_batches                         -- histórico de importações de Excel
 
 audit_log
   id, user_id, action, entity_type, entity_id, before_json, after_json, created_at
+
+app_settings                           -- configurações editáveis pelo admin (ex: remetente do email)
+  key (unique), value, updated_by, updated_at
 ```
 
 ### Regras de negócio
@@ -224,8 +229,8 @@ audit_log
 - Trimestre travado bloqueia edição de provas, notas, scans, frequência e comentários. Só o admin destrava.
 
 **Frequência**
-- Por aluno, por trimestre: aulas dadas, faltas e atrasos.
-- Presença % = (aulas dadas - faltas) / aulas dadas * 100, com 1 casa decimal. Atraso conta como presença (confirmar).
+- Por aluno, por trimestre: aulas dadas, faltas e atrasos. Uma só para a turma, não separada por matéria.
+- Presença % = (aulas dadas - faltas) / aulas dadas * 100, com 1 casa decimal. Atraso conta como presença.
 - Validar: faltas e atrasos não podem passar das aulas dadas.
 - Lançada à mão numa grade da turma, ou importada de Excel.
 
@@ -424,11 +429,13 @@ A partir daqui, cada fase termina com deploy.
 - [ ] Marca d'água "rascunho" enquanto a turma não estiver liberada
 - [ ] Caso de troca de turma no trimestre
 - [ ] Botão por aluno e "gerar todos da turma"
+- [ ] Boletim anual: os 3 trimestres do aluno num PDF só
 - [ ] Testes: anotações internas e scans nunca aparecem
 
 ### Fase 13: Revisão e envio por email
 - [ ] Rabino da turma marca como pronta, direção revisa, devolve ou libera
 - [ ] Painel da direção com o status de todas as turmas no trimestre
+- [ ] Tela de configurações do admin: email e nome do remetente
 - [ ] Envio por email em fila, com o PDF anexado, registro e reenvio de falhas
 - [ ] Testes: permissões, bloqueio de edição, envio só de turma liberada
 
@@ -446,6 +453,7 @@ A partir daqui, cada fase termina com deploy.
 - [ ] Fechar o ano: confirmação, verificação de pendências (turmas não liberadas), status `archived`
 - [ ] Tela de arquivo: anos fechados, só leitura, com turmas, notas, frequência e boletins
 - [ ] Ficha do aluno com o histórico de todos os anos, ligada pela matrícula
+- [ ] Apagar scans 2 anos depois da formatura do aluno, com confirmação do admin
 - [ ] Visão por turma: status de lançamento (provas sem nota, alunos sem scan, frequência faltando)
 
 ### Fase 16: Abertura do ano novo
@@ -470,19 +478,11 @@ A partir daqui, cada fase termina com deploy.
 
 ## 8. Pendências para confirmar com a direção
 
-- Escala: 0 a 10 com uma casa decimal?
-- O boletim mostra só as provas, ou também uma média por matéria?
-- Atraso conta como presença no cálculo da %?
-- Frequência por trimestre na turma inteira, ou separada por matéria?
-- Comentários públicos: só o rabino da turma, mesmo? (confirmar)
-- A secretaria tem número de matrícula para cada aluno?
-- Um exemplo real da planilha de alunos (pode ser com nomes trocados), para definir o formato da importação
-- Boletim de fim de ano: precisa de um boletim anual com os 3 trimestres?
-- Nome do ano letivo: civil (2027) ou judaico?
-- Logo em alta resolução ou vetor (SVG/PDF), cabeçalho oficial e assinatura no boletim
-- Endereço que envia os emails (de preferência num domínio da escola)
-- Por quanto tempo guardar os scans depois que o aluno se forma?
-- LGPD: comunicação aos pais sobre os dados guardados, antes de entrar dado real
+- Comentários públicos: o usuário respondeu que só o rabino da turma escreve. Falta confirmar se a direção pode corrigir na revisão
+- Um exemplo real da planilha de alunos (pode ser com nomes trocados), para definir o formato da importação. Virá depois; até lá, formato provisório
+- Logo: usar `assets/logo.webp` (vetorizar na Fase 1). Cabeçalho oficial e assinatura no boletim: a definir
+- Endereço que envia os emails: definido pelo admin na tela de configurações, perto do envio
+- LGPD: comunicação aos pais sobre os dados guardados. Não por ora, mas obrigatório antes de entrar dado real
 
 ## 9. Como trabalhar com o Claude Code
 
