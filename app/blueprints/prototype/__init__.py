@@ -25,11 +25,21 @@ def _nav(persona: str, active: str) -> list[dict]:
 
 def _page(template: str, persona: str = "rabbi", active: str = "", **context):
     user = "Direção" if persona == "admin" else data.RABBIS["levi"]
+    years = dict(data.YEARS)
+    selected = request.args.get("ano", data.YEAR)
+    if selected not in years:
+        selected = data.YEAR
     return render_template(
         f"prototype/{template}",
         nav_items=_nav(persona, active),
         user_name=user,
         home_href=url_for("prototype.index"),
+        year_options=[
+            (name, url_for("prototype.index", ano=name), archived)
+            for name, archived in data.YEARS
+        ],
+        selected_year=selected,
+        year_archived=years[selected],
         d=data,
         **context,
     )

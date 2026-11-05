@@ -9,6 +9,8 @@ from decimal import Decimal
 D = Decimal
 
 YEAR = "2027"
+# Anos letivos: o ativo e os do arquivo (só leitura).
+YEARS = [("2027", False), ("2026", True)]
 TERM = {"number": 1, "name": "1º Trimestre", "days_left": 12}
 SCALE_MAX = D("10")
 

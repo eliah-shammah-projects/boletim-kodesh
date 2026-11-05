@@ -18,6 +18,20 @@
       <a href="{{ item.href }}" class="flex min-h-11 items-center gap-2 rounded-md px-4 font-medium {{ 'bg-primary-light text-primary-dark' if item.active else 'text-gray hover:bg-surface hover:text-text' }}"{% if item.active %} aria-current="page"{% endif %}>{{ icon(item.icon) }}{{ item.label }}</a>
       {% endfor %}
     </nav>
+    {% if year_options is defined %}
+    <label class="ml-auto flex items-center gap-2 md:ml-0">
+      <span class="hidden text-sm text-gray lg:inline">Ano letivo</span>
+      <span class="relative">
+        <select x-data @change="location.href = $event.target.value" aria-label="Ano letivo"
+          class="h-11 appearance-none rounded-md border border-border bg-white pr-9 pl-3 font-semibold text-text focus:border-primary">
+          {% for name, href, archived in year_options %}
+          <option value="{{ href }}"{% if name == selected_year %} selected{% endif %}>{{ name }}{% if archived %} (arquivo){% endif %}</option>
+          {% endfor %}
+        </select>
+        <span class="pointer-events-none absolute inset-y-0 right-3 flex items-center text-gray">{{ icon("chevron-down", "size-4") }}</span>
+      </span>
+    </label>
+    {% endif %}
     {% if user_name is defined %}
     <div class="flex items-center gap-2">
       <span class="hidden text-sm text-gray sm:inline">{{ user_name }}</span>

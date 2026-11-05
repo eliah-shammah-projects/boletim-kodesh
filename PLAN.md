@@ -53,6 +53,7 @@ Além disso:
 | Nomes iguais | Cada aluno tem um cadastro único no sistema. A matrícula da secretaria é opcional: pode existir para alguns alunos e não para outros. Nome igual a outro aluno sempre pede confirmação |
 | Scans | Scan da prova por aluno, prova em branco e gabarito por prova. Só a equipe vê. Não vão no boletim. Os scans dos alunos ficam só até o começo do ano letivo seguinte, quando são apagados (com confirmação do admin). Prova em branco e gabarito continuam |
 | Área laica | Fora do sistema de notas. Só um campo com a turma laica do aluno no ano. Boletim separado |
+| Escolha do ano | No topo de todas as telas, a escolha do ano letivo. Anos passados abrem do arquivo, só para leitura (decidido na revisão do protótipo) |
 | Cor do shiur | Cada shiur tem uma cor de fita, escolhida pelo rabino numa paleta de 8 cores (todas legíveis com texto branco). Aparece nos cartões e nas telas do shiur |
 | Remetente do email | Configurável numa tela de configurações do admin (email e nome do remetente), não fixo no código |
 | Pais | Sem acesso. Recebem o boletim em PDF por email (até dois emails por aluno) |
