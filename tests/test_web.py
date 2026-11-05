@@ -47,6 +47,7 @@ def setup(db_session):
     admin = AdminFactory(name="Direção Teste")
     rabbi = UserFactory(name="Rav Teste")
     kclass = ClassFactory(academic_year=year, name="Shiur Alef", homeroom_rabbi=rabbi)
+    db_session.commit()
     return {"s": db_session, "year": year, "admin": admin, "rabbi": rabbi, "class": kclass}
 
 
@@ -106,6 +107,7 @@ def test_create_student_into_class(client, setup):
 
 def test_same_name_asks_for_confirmation(client, setup):
     StudentFactory(first_name="Gabriel", last_name="Cohen")
+    setup["s"].commit()
     login(client, setup["admin"])
     data = {"first_name": "Gabriel", "last_name": "Cohen", "school_grade": "10", "class_id": ""}
     html = client.post("/alunos/novo", data=data).get_data(as_text=True)

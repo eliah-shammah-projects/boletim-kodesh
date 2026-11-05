@@ -69,14 +69,13 @@ def create():
             confirm_same_name=confirm,
         )
     except ConflictError as exc:
+        # Busca os parecidos antes de desfazer: o rollback não pode apagar a resposta.
+        matches = [] if confirm else svc.same_name(data.first_name, data.last_name)
         db.session.rollback()
-        if svc.same_name(data.first_name, data.last_name) and not confirm:
+        if matches:
             # Nome igual: mostra os alunos parecidos e pede confirmação.
             return render_template(
-                "students/confirm_same_name.html",
-                data=request.form,
-                matches=svc.same_name(data.first_name, data.last_name),
-                year=year,
+                "students/confirm_same_name.html", data=request.form, matches=matches, year=year
             )
         flash_error(exc)
         return back("students.index")
