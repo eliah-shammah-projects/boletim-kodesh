@@ -1,10 +1,13 @@
 """Configuração do app. Segredos vêm só de variáveis de ambiente."""
 
 import os
+from pathlib import Path
 
 from dotenv import load_dotenv
 
 load_dotenv()
+
+BASE_DIR = Path(__file__).resolve().parent
 
 
 def normalize_db_url(url: str | None) -> str | None:
@@ -31,15 +34,20 @@ class Config:
     # Protótipo navegável com dados fictícios (Fase 1). Desligado em produção, salvo se pedido.
     PROTOTYPE_ENABLED = os.environ.get("PROTOTYPE_ENABLED") == "1"
     SEED_ALLOWED = False  # `flask seed`: só em desenvolvimento e testes
+    # "Entrar como" sem senha, provisório até a Fase 3. Nunca em produção.
+    DEV_LOGIN = False
 
 
 class DevelopmentConfig(Config):
     DEBUG = True
     PROTOTYPE_ENABLED = True
     SEED_ALLOWED = True
+    DEV_LOGIN = True
     SECRET_KEY = os.environ.get("SECRET_KEY", "dev-only-insecure-key")
+    # Sem DATABASE_URL, um arquivo SQLite local (o computador do desenvolvedor não tem MySQL).
+    # Os testes rodam sempre contra MySQL.
     SQLALCHEMY_DATABASE_URI = normalize_db_url(
-        os.environ.get("DATABASE_URL", "mysql+pymysql://boletim:boletim@127.0.0.1:3306/boletim")
+        os.environ.get("DATABASE_URL", f"sqlite:///{BASE_DIR / 'instance' / 'dev.db'}")
     )
 
 
@@ -47,6 +55,7 @@ class TestingConfig(Config):
     TESTING = True
     PROTOTYPE_ENABLED = True
     SEED_ALLOWED = True
+    DEV_LOGIN = True
     SECRET_KEY = "test-only-key"
     SQLALCHEMY_DATABASE_URI = normalize_db_url(
         os.environ.get(

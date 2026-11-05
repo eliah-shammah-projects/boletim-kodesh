@@ -1,0 +1,11 @@
+{% extends "layouts/app.html" %}
+{% from "components/ui.html" import button, page_header, empty_state %}
+{% block title %}Shiurim{% endblock %}
+{% block content %}
+{{ page_header("Shiurim") }}
+{% if current_user.is_admin %}
+{% call empty_state("Nenhum ano letivo ainda. Comece criando o ano, com os trimestres e a escala de notas.") %}{{ button("Criar ano letivo", icon_name="plus", href=url_for("admin.index")) }}{% endcall %}
+{% else %}
+{{ empty_state("Nenhum ano letivo aberto ainda. A direção precisa criar o ano.") }}
+{% endif %}
+{% endblock %}

@@ -1,0 +1,62 @@
+{% extends "layouts/app.html" %}
+{% from "components/ui.html" import icon, button, card, page_header %}
+{% from "components/forms.html" import text_input, select, csrf_field %}
+{% block title %}{{ "Editar " ~ kclass.name if kclass else "Criar shiur" }}{% endblock %}
+{% block content %}
+{% macro val(name, default="") -%}
+{%- if form %}{{ form.get(name, default) }}{% elif kclass %}{{ kclass[name] if kclass[name] is not none else default }}{% else %}{{ default }}{% endif -%}
+{%- endmacro %}
+{% if kclass %}
+{{ page_header("Editar shiur", kclass.name, back_href=url_for("classes.detail", class_id=kclass.id), back_label=kclass.name) }}
+{% else %}
+{{ page_header("Criar shiur", "Em " ~ selected_year ~ ". Dá para mudar tudo depois.", back_href=url_for("main.index"), back_label="Shiurim") }}
+{% endif %}
+
+<form method="post" class="grid max-w-2xl gap-6" x-data="{ color: '{{ val('color', 'azul') }}' }">
+  {{ csrf_field() }}
+  {% call card("Shiur") %}
+  <div class="grid gap-5 sm:grid-cols-2">
+    {{ text_input("name", "Nome do shiur", value=val("name"), required=True, placeholder="Ex: Shiur Alef") }}
+    {{ text_input("level", "Nível", value=val("level"), placeholder="Ex: 1º colegial", hint="Opcional.") }}
+    <div class="sm:col-span-2">
+      {{ select("homeroom_rabbi_id", "Rabino da turma", [("", "Escolher depois")] + class_choices(rabbis), selected=val("homeroom_rabbi_id"), hint="Dá Gemara e escreve os comentários do boletim.") }}
+    </div>
+  </div>
+  {% endcall %}
+
+  {% call card("Cor de fita") %}
+  <fieldset>
+    <legend class="mb-2 text-gray">Aparece na lista de shiurim, para reconhecer de longe.</legend>
+    <div class="flex flex-wrap gap-2">
+      {% for key, name in colors.items() %}
+      <label class="cursor-pointer" title="{{ name }}">
+        <input type="radio" name="color" value="{{ key }}" class="peer sr-only" x-model="color">
+        <span class="flex size-11 items-center justify-center rounded-full ring-offset-2 peer-checked:ring-2 peer-checked:ring-text peer-focus-visible:ring-2 peer-focus-visible:ring-primary" style="background: {{ shiur_colors[key] }}">
+          <span x-show="color === '{{ key }}'" class="text-white">{{ icon("check", "size-5") }}</span>
+        </span>
+        <span class="sr-only">{{ name }}</span>
+      </label>
+      {% endfor %}
+    </div>
+  </fieldset>
+  {% endcall %}
+
+  {% if not kclass and subjects %}
+  {% call card("Matérias", "Marque as matérias do shiur. O rabino de cada uma você escolhe depois, na página do shiur.") %}
+  <div class="grid gap-2 sm:grid-cols-2">
+    {% for s in subjects %}
+    <label class="flex min-h-11 items-center gap-3">
+      <input type="checkbox" name="subject_ids" value="{{ s.id }}" checked class="size-5 accent-primary">
+      <span>{{ s.name }}</span>
+    </label>
+    {% endfor %}
+  </div>
+  {% endcall %}
+  {% endif %}
+
+  <div class="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+    {{ button("Cancelar", variant="secondary", href=(url_for("classes.detail", class_id=kclass.id) if kclass else url_for("main.index"))) }}
+    {{ button("Salvar shiur" if kclass else "Criar shiur", type="submit") }}
+  </div>
+</form>
+{% endblock %}

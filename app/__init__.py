@@ -6,6 +6,7 @@ from app.blueprints import register_blueprints
 from app.cli import register_cli
 from app.extensions import csrf, db, migrate
 from app.services.formatting import format_decimal, format_percent, format_score
+from app.web import register_web
 from config import CONFIGS
 
 
@@ -26,8 +27,17 @@ def create_app(config_name: str | None = None) -> Flask:
     csrf.init_app(app)
 
     app.jinja_env.filters.update(decimal=format_decimal, percent=format_percent)
-    app.jinja_env.globals.update(format_score=format_score)
+    from app.models import SHIUR_COLORS
+    from app.services.reports import SCHOOL_GRADE_LABELS
 
+    app.jinja_env.globals.update(
+        format_score=format_score,
+        shiur_colors=SHIUR_COLORS,
+        grade_choices=[(str(g), label) for g, label in SCHOOL_GRADE_LABELS.items()],
+        class_choices=lambda classes: [(str(c.id), c.name) for c in classes],
+    )
+
+    register_web(app)
     register_blueprints(app)
     register_cli(app)
     return app

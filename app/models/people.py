@@ -31,6 +31,22 @@ class User(Base):
     is_active: Mapped[bool] = mapped_column(default=True, server_default=sa.true())
     created_at: Mapped[datetime] = created_at_column()
 
+    # Interface do Flask-Login (is_active já é a coluna).
+    @property
+    def is_authenticated(self) -> bool:
+        return True
+
+    @property
+    def is_anonymous(self) -> bool:
+        return False
+
+    def get_id(self) -> str:
+        return str(self.id)
+
+    @property
+    def is_admin(self) -> bool:
+        return self.role == UserRole.ADMIN
+
     def __repr__(self) -> str:  # sem dados pessoais em logs
         return f"<User {self.id}>"
 

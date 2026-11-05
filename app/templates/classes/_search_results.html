@@ -1,0 +1,27 @@
+{% from "components/ui.html" import button %}
+{% from "components/forms.html" import csrf_field %}
+{% if q|length < 2 %}
+{% elif not found %}
+<p class="text-gray">Nenhum aluno encontrado com “{{ q }}”. Use Cadastrar aluno novo.</p>
+{% else %}
+<ul class="divide-y divide-border rounded-md border border-border">
+  {% for s in found %}
+  {% set kc = where.get(s.id) %}
+  <li class="flex flex-col gap-2 px-4 py-3 sm:flex-row sm:items-center">
+    <span class="flex-1">
+      <span class="block font-medium">{{ s.full_name }}</span>
+      <span class="block text-sm text-gray">Nº {{ s.id }}{% if kc %}, hoje no {{ kc.name }}{% else %}, sem shiur em {{ year.name }}{% endif %}</span>
+    </span>
+    {% if s.id in current %}
+    <span class="text-sm text-gray">Já está neste shiur</span>
+    {% else %}
+    <form method="post" action="{{ url_for('classes.add_student', class_id=kclass.id) }}">
+      {{ csrf_field() }}
+      <input type="hidden" name="student_id" value="{{ s.id }}">
+      {{ button("Trocar para este shiur" if kc else "Colocar no shiur", variant="secondary", size="sm", type="submit") }}
+    </form>
+    {% endif %}
+  </li>
+  {% endfor %}
+</ul>
+{% endif %}

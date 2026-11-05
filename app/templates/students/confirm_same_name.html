@@ -1,0 +1,28 @@
+{% extends "layouts/app.html" %}
+{% from "components/ui.html" import button, alert, page_header %}
+{% from "components/forms.html" import csrf_field %}
+{% block title %}Nome igual{% endblock %}
+{% block content %}
+{{ page_header("Já existe um aluno com este nome", data.get("first_name") ~ " " ~ data.get("last_name")) }}
+<div class="grid max-w-2xl gap-6">
+  {{ alert("warning", "Confira se não é a mesma pessoa. O aluno é identificado pelo cadastro, nunca só pelo nome.") }}
+  <ul class="divide-y divide-border rounded-md border border-border bg-white">
+    {% for m in matches %}
+    <li class="flex items-center justify-between gap-4 px-5 py-3">
+      <span>
+        <span class="block font-semibold">{{ m.full_name }}</span>
+        <span class="block text-sm text-gray">Nº {{ m.id }}{% if m.external_id %}, matrícula {{ m.external_id }}{% endif %}{% if m.birth_date %}, nascido em {{ m.birth_date.strftime("%d/%m/%Y") }}{% endif %}</span>
+      </span>
+      {{ button("Ver cadastro", variant="ghost", href=url_for("students.detail", student_id=m.id)) }}
+    </li>
+    {% endfor %}
+  </ul>
+  <form method="post" action="{{ url_for('students.create') }}" class="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+    {{ csrf_field() }}
+    {% for key, value in data.items() if key not in ("csrf_token", "confirm_same_name") %}<input type="hidden" name="{{ key }}" value="{{ value }}">{% endfor %}
+    <input type="hidden" name="confirm_same_name" value="1">
+    {{ button("Voltar sem cadastrar", variant="secondary", href=data.get("next") or url_for("students.index")) }}
+    {{ button("É outro aluno, cadastrar", type="submit") }}
+  </form>
+</div>
+{% endblock %}

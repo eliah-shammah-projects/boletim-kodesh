@@ -25,6 +25,7 @@ from app.services.classes import (
     effective_teacher,
     enroll,
     enrollments_in_term,
+    move_to_class,
     remove_from_class,
     review_status,
     transfer,
@@ -174,6 +175,24 @@ def test_remove_from_class_keeps_the_enrollment(w):
     assert closed.id == w.enrollment.id
     assert closed.end_date == date(2100, 4, 1)
     assert active_enrollment(w.sy) is None
+
+
+def test_move_without_records_just_corrects_the_class(w):
+    bet = ClassFactory(academic_year=w.year, name="Shiur Bet")
+    moved = move_to_class(w.sy, bet, w.enrollment.start_date)  # mesmo dia: correção
+    assert moved.id == w.enrollment.id
+    assert moved.kodesh_class_id == bet.id
+    assert moved.end_date is None
+
+
+def test_move_with_records_is_a_transfer(w):
+    grades.set_score(w.rabbi, w.prova, w.enrollment, "8")
+    bet = ClassFactory(academic_year=w.year, name="Shiur Bet")
+    new = move_to_class(w.sy, bet, date(2100, 4, 1))
+    assert new.id != w.enrollment.id
+    w.s.refresh(w.enrollment)
+    assert w.enrollment.kodesh_class_id == w.kclass.id  # a nota fica no shiur antigo
+    assert w.enrollment.end_date == date(2100, 3, 31)
 
 
 # ---------- Notas ----------

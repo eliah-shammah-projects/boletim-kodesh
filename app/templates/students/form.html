@@ -1,0 +1,37 @@
+{% extends "layouts/app.html" %}
+{% from "components/ui.html" import button, card, page_header %}
+{% from "components/forms.html" import text_input, textarea, csrf_field %}
+{% block title %}Editar {{ student.full_name }}{% endblock %}
+{% block content %}
+{% macro val(name) -%}
+{%- if form %}{{ form.get(name, "") }}{% else %}{{ student[name] if student[name] is not none else "" }}{% endif -%}
+{%- endmacro %}
+{{ page_header("Editar dados", student.full_name, back_href=url_for("students.detail", student_id=student.id), back_label=student.full_name) }}
+<form method="post" class="grid max-w-2xl gap-6">
+  {{ csrf_field() }}
+  {% call card("Aluno") %}
+  <div class="grid gap-5 sm:grid-cols-2">
+    {{ text_input("first_name", "Nome", value=val("first_name"), required=True) }}
+    {{ text_input("last_name", "Sobrenome", value=val("last_name"), required=True) }}
+    {{ text_input("hebrew_name", "Nome em hebraico", value=val("hebrew_name"), hint="Opcional.", attrs={"dir": "auto", "lang": "he"}) }}
+    {{ text_input("birth_date", "Nascimento", type="date", value=(form.get("birth_date", "") if form else (student.birth_date.isoformat() if student.birth_date else "")), hint="Opcional.") }}
+    {{ text_input("external_id", "Matrícula da secretaria", value=val("external_id"), hint="Opcional.") }}
+  </div>
+  {% endcall %}
+  {% call card("Pais") %}
+  <div class="grid gap-5 sm:grid-cols-2">
+    {{ text_input("parent_name", "Responsável", value=val("parent_name")) }}
+    {{ text_input("parent_phone", "Telefone", value=val("parent_phone"), type="tel") }}
+    {{ text_input("parent_email", "Email", value=val("parent_email"), type="email", hint="Recebe o boletim.") }}
+    {{ text_input("parent_email_2", "Segundo email", value=val("parent_email_2"), type="email", hint="Opcional.") }}
+  </div>
+  {% endcall %}
+  {% call card("Observações") %}
+  {{ textarea("notes", "Observações", value=val("notes"), hint="Só a equipe vê. Não vai para o boletim.") }}
+  {% endcall %}
+  <div class="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+    {{ button("Cancelar", variant="secondary", href=url_for("students.detail", student_id=student.id)) }}
+    {{ button("Salvar dados", type="submit") }}
+  </div>
+</form>
+{% endblock %}

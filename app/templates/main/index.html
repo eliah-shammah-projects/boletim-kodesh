@@ -1,7 +1,44 @@
-{% extends "base.html" %}
+{% extends "layouts/app.html" %}
+{% from "components/ui.html" import icon, button, status, page_header, empty_state, alert %}
+{% block title %}Shiurim{% endblock %}
 {% block content %}
-<main class="mx-auto max-w-2xl p-6">
-  <h1 class="text-2xl font-semibold">Boletim Kodesh</h1>
-  <p class="mt-2">Sistema em construção.</p>
-</main>
+{% set archived = year.status.value == "archived" %}
+{% set can_edit = current_user.is_admin and not archived %}
+{% call page_header("Shiurim de " ~ year.name if archived else "Shiurim", ("Ano fechado. Fica no arquivo, só para leitura." if archived else (term.name ~ " de " ~ year.name if term else year.name))) %}
+  {% if can_edit %}
+  {{ button("Inserir aluno", variant="secondary", attrs={"data-open-dialog": "inserir-aluno"}) }}
+  {{ button("Criar shiur", icon_name="plus", href=url_for("classes.create")) }}
+  {% endif %}
+{% endcall %}
+
+{% if archived %}<div class="mb-6">{{ alert("info", "Você está vendo um ano do arquivo. Dá para consultar, mas não dá para mudar nada.") }}</div>{% endif %}
+
+{% set labels = {"open": ("warning", "Em lançamento"), "ready_for_review": ("primary", "Pronto para revisão"), "approved": ("success", "Liberado")} %}
+{% if summaries %}
+<ul class="divide-y divide-border overflow-hidden rounded-md border border-border bg-white">
+  {% for sm in summaries %}
+  {% set c = sm.kodesh_class %}
+  {% set kind, label = labels[sm.status.value] %}
+  <li>
+    <a href="{{ url_for('classes.detail', class_id=c.id) }}"
+      class="relative grid gap-x-6 gap-y-2 py-4 pr-4 pl-6 transition-colors duration-150 hover:bg-surface sm:pr-6 md:grid-cols-[minmax(0,20rem)_minmax(0,1fr)_auto_auto] md:items-center">
+      <span class="absolute inset-y-0 left-0 w-1.5" style="background: {{ shiur_colors[c.color] }}" aria-hidden="true"></span>
+      <span>
+        <span class="block font-heading text-lg font-semibold">{{ c.name }}</span>
+        <span class="block text-sm text-gray">{{ c.level or "Sem nível" }}, {{ c.homeroom_rabbi.name if c.homeroom_rabbi else "sem rabino da turma" }}, {{ sm.students }} {{ "aluno" if sm.students == 1 else "alunos" }}</span>
+      </span>
+      <span class="{{ 'font-medium text-warning-dark' if sm.has_todo else 'text-gray' }}">{{ sm.todo }}</span>
+      <span>{{ status(kind, label) }}</span>
+      <span class="hidden text-gray md:block">{{ icon("chevron-right") }}</span>
+    </a>
+  </li>
+  {% endfor %}
+</ul>
+{% elif can_edit %}
+{% call empty_state("Nenhum shiur em " ~ year.name ~ " ainda.") %}{{ button("Criar shiur", icon_name="plus", href=url_for("classes.create")) }}{% endcall %}
+{% else %}
+{{ empty_state("Nenhum shiur em " ~ year.name ~ " ainda.") }}
+{% endif %}
+
+{% if can_edit %}{% include "students/_create_modal.html" %}{% endif %}
 {% endblock %}

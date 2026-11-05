@@ -1,0 +1,56 @@
+{% extends "layouts/app.html" %}
+{% from "components/ui.html" import button, status, card, page_header, alert %}
+{% from "components/forms.html" import text_input, csrf_field %}
+{% from "components/dialog.html" import confirm_dialog %}
+{% block title %}Ano {{ year.name }}{% endblock %}
+{% block content %}
+{% set archived = year.status.value == "archived" %}
+{% call page_header("Ano letivo " ~ year.name, "No arquivo, só para leitura." if archived else "Aberto.", back_href=url_for("admin.index"), back_label="Cadastros") %}
+  {% if not archived %}{{ button("Fechar o ano", variant="danger", attrs={"data-open-dialog": "fechar-ano"}) }}{% endif %}
+{% endcall %}
+
+{% if archived %}<div class="mb-6">{{ alert("info", "Este ano está fechado. Nada dele pode ser mudado.") }}</div>{% endif %}
+
+<form method="post" class="grid max-w-3xl gap-6">
+  {{ csrf_field() }}
+  {% call card("Trimestres", "Nome e datas de cada trimestre. As datas definem em que trimestre cada aluno esteve em cada shiur.") %}
+  <div class="grid gap-6">
+    {% for t in terms %}
+    <div class="grid gap-4 sm:grid-cols-[1fr_1fr_1fr_auto] sm:items-end">
+      {{ text_input("term_" ~ t.id ~ "_name", "Nome", value=t.name, id="tn-" ~ t.id, attrs={"disabled": true} if archived else {}) }}
+      {{ text_input("term_" ~ t.id ~ "_start", "Início", type="date", value=(t.start_date.isoformat() if t.start_date else ""), id="ts-" ~ t.id, attrs={"disabled": true} if archived else {}) }}
+      {{ text_input("term_" ~ t.id ~ "_end", "Fim", type="date", value=(t.end_date.isoformat() if t.end_date else ""), id="te-" ~ t.id, attrs={"disabled": true} if archived else {}) }}
+      <div class="pb-2">{{ status("danger", "Travado") if t.is_locked else status("success", "Aberto para lançar") }}</div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endcall %}
+
+  {% call card("Escala de notas") %}
+  <div class="max-w-xs">
+    {{ text_input("grade_scale_max", "Nota máxima do ano", value=year.grade_scale_max|decimal, attrs={"inputmode": "decimal", "disabled": true} if (has_scores or archived) else {"inputmode": "decimal"}, hint=("Não pode mudar: já há notas lançadas." if has_scores else "Cada prova pode ter a sua nota máxima, mas esta é a padrão.")) }}
+    {% if has_scores or archived %}<input type="hidden" name="grade_scale_max" value="{{ year.grade_scale_max }}">{% endif %}
+  </div>
+  {% endcall %}
+
+  {% if not archived %}
+  <div class="flex justify-end">{{ button("Salvar ano", type="submit") }}</div>
+  {% endif %}
+</form>
+
+{% if not archived %}
+<section class="mt-10 max-w-3xl" aria-labelledby="travar-title">
+  <h2 id="travar-title" class="mb-2 text-lg">Travar trimestre</h2>
+  <p class="mb-4 text-gray">Trimestre travado não deixa mudar provas, notas, scans, frequência e comentários de nenhum shiur.</p>
+  <div class="flex flex-wrap gap-2">
+    {% for t in terms %}
+    <form method="post" action="{{ url_for('admin.toggle_term_lock', term_id=t.id) }}">
+      {{ csrf_field() }}
+      {{ button(("Destravar " if t.is_locked else "Travar ") ~ t.name, variant="secondary", type="submit") }}
+    </form>
+    {% endfor %}
+  </div>
+</section>
+{{ confirm_dialog("fechar-ano", "Fechar o ano " ~ year.name ~ "?", "Tudo deste ano fica no arquivo, só para leitura: shiurim, notas, frequência e boletins. Depois dá para abrir o ano seguinte.", "Fechar o ano", action=url_for("admin.close_year", year_id=year.id)) }}
+{% endif %}
+{% endblock %}

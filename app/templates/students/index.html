@@ -1,0 +1,44 @@
+{% extends "layouts/app.html" %}
+{% from "components/ui.html" import icon, button, status, page_header, empty_state %}
+{% block title %}Alunos{% endblock %}
+{% block content %}
+{% call page_header("Alunos", (students|length ~ (" encontrado" if students|length == 1 else " encontrados")) if q else "Todos os alunos cadastrados") %}
+  {% if current_user.is_admin and not year_archived %}{{ button("Inserir aluno", icon_name="plus", attrs={"data-open-dialog": "inserir-aluno"}) }}{% endif %}
+{% endcall %}
+
+<form method="get" class="mb-6 max-w-md">
+  <label for="q" class="mb-1.5 block font-medium">Buscar aluno</label>
+  <div class="flex gap-2">
+    <div class="relative flex-1">
+      <span class="pointer-events-none absolute inset-y-0 left-3 flex items-center text-gray">{{ icon("search") }}</span>
+      <input id="q" name="q" type="search" value="{{ q }}" placeholder="Nome, número ou matrícula"
+        class="h-11 w-full rounded-md border border-border bg-white pr-3 pl-10 text-base focus:border-primary">
+    </div>
+    {{ button("Buscar", variant="secondary", type="submit") }}
+  </div>
+</form>
+
+{% if students %}
+<ul class="divide-y divide-border overflow-hidden rounded-md border border-border bg-white">
+  {% for s in students %}
+  {% set kc = classes.get(s.id) %}
+  <li>
+    <a href="{{ url_for('students.detail', student_id=s.id) }}" class="flex min-h-16 items-center gap-4 px-5 py-3 transition-colors duration-150 hover:bg-surface sm:px-6">
+      <span class="flex-1">
+        <span class="block font-semibold">{{ s.full_name }}{% if s.hebrew_name %} <span class="font-normal text-gray" lang="he" dir="rtl">{{ s.hebrew_name }}</span>{% endif %}</span>
+        <span class="block text-sm text-gray">Nº {{ s.id }}{% if s.external_id %}, matrícula {{ s.external_id }}{% endif %}, {{ kc.name if kc else "sem shiur em " ~ (year.name if year else "") }}</span>
+      </span>
+      {% if not s.is_active %}{{ status("neutral", "Inativo") }}{% endif %}
+      <span class="text-gray">{{ icon("chevron-right") }}</span>
+    </a>
+  </li>
+  {% endfor %}
+</ul>
+{% elif q %}
+{{ empty_state("Nenhum aluno encontrado com “" ~ q ~ "”. Confira a grafia ou busque pelo número.") }}
+{% else %}
+{% call empty_state("Nenhum aluno cadastrado ainda.") %}{% if current_user.is_admin %}{{ button("Inserir aluno", icon_name="plus", attrs={"data-open-dialog": "inserir-aluno"}) }}{% endif %}{% endcall %}
+{% endif %}
+
+{% if current_user.is_admin and not year_archived %}{% include "students/_create_modal.html" %}{% endif %}
+{% endblock %}

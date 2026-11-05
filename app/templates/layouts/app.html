@@ -35,7 +35,14 @@
     {% if user_name is defined %}
     <div class="flex items-center gap-2">
       <span class="hidden text-sm text-gray sm:inline">{{ user_name }}</span>
+      {% if logout_href is defined %}
+      <form method="post" action="{{ logout_href }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button type="submit" class="flex min-h-11 items-center gap-1.5 rounded-md px-3 text-sm text-gray hover:bg-surface hover:text-text">{{ icon("log-out", "size-4") }}Sair</button>
+      </form>
+      {% else %}
       <a href="#" class="flex min-h-11 items-center gap-1.5 rounded-md px-3 text-sm text-gray hover:bg-surface hover:text-text">{{ icon("log-out", "size-4") }}Sair</a>
+      {% endif %}
     </div>
     {% endif %}
   </div>

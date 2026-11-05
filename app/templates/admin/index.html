@@ -1,0 +1,89 @@
+{% extends "layouts/app.html" %}
+{% from "components/ui.html" import icon, button, status, card, page_header, empty_state, modal %}
+{% from "components/forms.html" import text_input, select, csrf_field %}
+{% block title %}Cadastros{% endblock %}
+{% block content %}
+{{ page_header("Cadastros", "Anos letivos e matérias. Só a direção vê esta área.") }}
+
+<section class="mb-10" aria-labelledby="anos-title">
+  <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
+    <h2 id="anos-title" class="text-lg">Anos letivos</h2>
+    {% if not active %}{{ button("Criar ano letivo", icon_name="plus", attrs={"data-open-dialog": "novo-ano"}) }}{% endif %}
+  </div>
+  {% if active %}<p class="mb-4 text-gray">Para abrir um ano novo, feche antes o {{ active.name }}. Só um ano fica aberto por vez.</p>{% endif %}
+  {% if years %}
+  <ul class="divide-y divide-border overflow-hidden rounded-md border border-border bg-white">
+    {% for y in years %}
+    <li>
+      <a href="{{ url_for('admin.year', year_id=y.id) }}" class="flex min-h-16 items-center gap-4 px-5 py-3 transition-colors duration-150 hover:bg-surface sm:px-6">
+        <span class="flex-1">
+          <span class="block font-heading text-lg font-semibold">{{ y.name }}</span>
+          <span class="block text-sm text-gray">{{ y.terms|length }} trimestres, notas de 0 a {{ y.grade_scale_max|decimal }}</span>
+        </span>
+        {{ status("success", "Aberto") if y.status.value == "active" else status("neutral", "No arquivo") }}
+        <span class="text-gray">{{ icon("chevron-right") }}</span>
+      </a>
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  {% call empty_state("Nenhum ano letivo ainda. Comece criando o ano, com os trimestres e a escala de notas.") %}{{ button("Criar ano letivo", icon_name="plus", attrs={"data-open-dialog": "novo-ano"}) }}{% endcall %}
+  {% endif %}
+</section>
+
+<section id="materias" aria-labelledby="materias-title">
+  <h2 id="materias-title" class="mb-4 text-lg">Matérias</h2>
+  <p class="mb-4 text-gray">Catálogo usado por todos os shiurim. Matéria não é apagada: desative quando não for mais usada.</p>
+  {% if subjects %}
+  <ul class="divide-y divide-border overflow-hidden rounded-md border border-border bg-white">
+    {% for s in subjects %}
+    <li x-data="{ editing: false }" class="flex flex-col gap-3 px-5 py-3 sm:flex-row sm:items-center sm:px-6 {{ '' if s.is_active else 'bg-surface' }}">
+      <div x-show="!editing" class="flex flex-1 items-center gap-3">
+        <span class="font-medium">{{ s.name }}</span>
+        {% if not s.is_active %}{{ status("neutral", "Desativada") }}{% endif %}
+      </div>
+      <form x-show="editing" x-cloak method="post" action="{{ url_for('admin.update_subject', subject_id=s.id) }}" class="flex flex-1 flex-wrap items-end gap-2">
+        {{ csrf_field() }}
+        <div class="min-w-48 flex-1">{{ text_input("name", "Nome da matéria", value=s.name, id="sub-" ~ s.id) }}</div>
+        {{ button("Salvar nome", type="submit") }}
+        {{ button("Cancelar", variant="ghost", attrs={"@click": "editing = false"}) }}
+      </form>
+      <div x-show="!editing" class="flex gap-2">
+        {{ button("Renomear", variant="ghost", size="sm", attrs={"@click": "editing = true"}) }}
+        <form method="post" action="{{ url_for('admin.update_subject', subject_id=s.id) }}">
+          {{ csrf_field() }}<input type="hidden" name="toggle" value="1">
+          {{ button("Reativar" if not s.is_active else "Desativar", variant="ghost", size="sm", type="submit") }}
+        </form>
+      </div>
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  {{ empty_state("Nenhuma matéria cadastrada ainda. Inclua abaixo (ex: Gemara, Chumash, Halachá, Navi).") }}
+  {% endif %}
+  <form method="post" action="{{ url_for('admin.create_subject') }}" class="mt-4 flex flex-wrap items-end gap-3 rounded-md border border-dashed border-border bg-white p-5 sm:p-6">
+    {{ csrf_field() }}
+    <div class="min-w-56 flex-1">{{ text_input("name", "Nova matéria", placeholder="Ex: Mishná", id="nova-materia", required=True) }}</div>
+    {{ button("Incluir matéria", type="submit", variant="secondary") }}
+  </form>
+</section>
+
+{% call modal("novo-ano", "Criar ano letivo", "O ano começa vazio: sem shiurim, matérias, provas ou notas.") %}
+<form method="post" action="{{ url_for('admin.create_year') }}" class="grid gap-5">
+  {{ csrf_field() }}
+  {{ text_input("name", "Nome do ano", value=(today.year + 1)|string if active is none and years else today.year|string, required=True, hint="Ano civil, ex: 2027.", id="ano-nome") }}
+  <div class="grid gap-5 sm:grid-cols-2">
+    {{ text_input("start_date", "Início", type="date", required=True, id="ano-inicio") }}
+    {{ text_input("end_date", "Fim", type="date", hint="Opcional.", id="ano-fim") }}
+  </div>
+  <div class="grid gap-5 sm:grid-cols-2">
+    {{ select("terms", "Trimestres", [("3", "3 trimestres"), ("2", "2"), ("4", "4")], selected="3", id="ano-trimestres") }}
+    {{ text_input("grade_scale_max", "Nota máxima", value="10", hint="Não muda depois que houver notas.", attrs={"inputmode": "decimal"}, id="ano-escala") }}
+  </div>
+  <div class="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+    {{ button("Cancelar", variant="secondary", attrs={"onclick": "this.closest('dialog').close()"}) }}
+    {{ button("Criar ano letivo", type="submit") }}
+  </div>
+</form>
+{% endcall %}
+{% endblock %}

@@ -1,0 +1,23 @@
+{# Janela "Inserir aluno". Abrir com data-open-dialog="inserir-aluno". `preset_class_id` escolhe o shiur. #}
+{% from "components/ui.html" import button, modal %}
+{% from "components/forms.html" import text_input, select, csrf_field %}
+{% call modal("inserir-aluno", "Inserir aluno", "Cadastra o aluno em " ~ selected_year ~ ".") %}
+<form method="post" action="{{ url_for('students.create') }}" class="grid gap-5">
+  {{ csrf_field() }}
+  <input type="hidden" name="next" value="{{ request.path }}">
+  <div class="grid gap-5 sm:grid-cols-2">
+    {{ text_input("first_name", "Nome", required=True, id="novo-first_name", attrs={"autocomplete": "off"}) }}
+    {{ text_input("last_name", "Sobrenome", required=True, id="novo-last_name", attrs={"autocomplete": "off"}) }}
+  </div>
+  {{ text_input("hebrew_name", "Nome em hebraico", hint="Opcional.", id="novo-hebrew_name", attrs={"dir": "auto", "lang": "he"}) }}
+  <div class="grid gap-5 sm:grid-cols-2">
+    {{ select("school_grade", "Série", grade_choices, selected="10", id="novo-school_grade") }}
+    {{ text_input("external_id", "Matrícula da secretaria", hint="Opcional.", id="novo-external_id") }}
+  </div>
+  {{ select("class_id", "Shiur", [("", "Sem shiur por enquanto")] + class_choices(year_classes), selected=(preset_class_id|string if preset_class_id is defined else ""), hint="Pode deixar sem shiur e escolher depois.", id="novo-class_id") }}
+  <div class="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+    {{ button("Cancelar", variant="secondary", attrs={"onclick": "this.closest('dialog').close()"}) }}
+    {{ button("Cadastrar aluno", type="submit") }}
+  </div>
+</form>
+{% endcall %}

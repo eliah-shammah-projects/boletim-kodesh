@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% from "components/ui.html" import alert %}
+{% from "components/forms.html" import csrf_field %}
+{% block title %}Entrar{% endblock %}
+{% block content %}
+<div class="min-h-screen bg-white">
+<main class="mx-auto flex min-h-screen max-w-md flex-col justify-center px-4 py-10">
+  <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Or Yossef Yeshiva College" class="mb-8 h-14 w-auto self-start">
+  <h1 class="text-2xl">Entrar como</h1>
+  <p class="mt-2 text-gray">Entrada provisória, só no computador de desenvolvimento. O login com senha vem depois.</p>
+  {% with messages = get_flashed_messages(with_categories=true) %}{% for c, m in messages %}<div class="mt-4">{{ alert("info", m) }}</div>{% endfor %}{% endwith %}
+  {% if users %}
+  <form method="post" class="mt-6 grid gap-2">
+    {{ csrf_field() }}
+    <input type="hidden" name="next" value="{{ next }}">
+    {% for u in users %}
+    <button type="submit" name="user_id" value="{{ u.id }}"
+      class="flex min-h-14 items-center justify-between rounded-md border border-border bg-white px-4 text-left transition-colors duration-150 hover:border-primary/50 hover:bg-primary-light">
+      <span class="font-medium">{{ u.name }}</span>
+      <span class="text-sm text-gray">{{ "Direção" if u.is_admin else "Rabino" }}</span>
+    </button>
+    {% endfor %}
+  </form>
+  {% else %}
+  <div class="mt-6">{{ alert("warning", "Nenhum usuário no banco ainda. Rode o seed (flask seed) ou o rodar.bat, que já faz isso.") }}</div>
+  {% endif %}
+</main>
+</div>
+{% endblock %}

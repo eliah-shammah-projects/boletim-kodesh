@@ -54,6 +54,9 @@ Além disso:
 | Scans | Scan da prova por aluno, prova em branco e gabarito por prova. Só a equipe vê. Não vão no boletim. Os scans dos alunos ficam só até o começo do ano letivo seguinte, quando são apagados (com confirmação do admin). Prova em branco e gabarito continuam |
 | Área laica | Fora do sistema de notas. Só um campo com a turma laica do aluno no ano. Boletim separado |
 | Escolha do ano | No topo de todas as telas, a escolha do ano letivo. Anos passados abrem do arquivo, só para leitura (decidido na revisão do protótipo) |
+| Ordem das fases (decidido em 2026-11-05) | Primeiro as telas de verdade (Fases 5 a 13), depois login (3) e deploy (4). Até a Fase 3, um seletor provisório "Entrar como" só em desenvolvimento |
+| Aprovação de telas | O usuário liberou construir as telas sem aprovar o desenho antes; as regras do docs/DESIGN.md continuam valendo |
+| Banco local | Em desenvolvimento, sem MySQL no computador, o app usa um arquivo SQLite (`instance/dev.db`). Os testes continuam sempre contra MySQL |
 | Cor do shiur | Cada shiur tem uma cor de fita, escolhida pelo rabino numa paleta de 8 cores (todas legíveis com texto branco). Aparece nos cartões e nas telas do shiur |
 | Remetente do email | Configurável numa tela de configurações do admin (email e nome do remetente), não fixo no código |
 | Pais | Sem acesso. Recebem o boletim em PDF por email (até dois emails por aluno) |
@@ -346,9 +349,9 @@ Regras:
 
 ### Fase 1: Design e protótipo
 - [x] Identidade visual da seção 6b configurada no Tailwind (cores, fontes, espaçamentos) e componentes (botões, tabelas, formulários, alertas, modais)
-- [ ] Logo em SVG (pedir o original à escola ou vetorizar o PNG). Tentativa de vetorizar o PNG ficou parecida, mas não idêntica: por ora usamos `logo.png` (464px, ~300 dpi a 4 cm no boletim). Pedir o original (SVG/PDF/AI/EPS) à escola, à Digital Bees (fez o site) ou à gráfica
+- [x] Logo: o usuário aprovou o PNG (`assets/logo.png`); SVG não é mais necessário. Tentativa de vetorizar o PNG ficou parecida, mas não idêntica: por ora usamos `logo.png` (464px, ~300 dpi a 4 cm no boletim). Pedir o original (SVG/PDF/AI/EPS) à escola, à Digital Bees (fez o site) ou à gráfica
 - [x] Protótipo navegável das telas principais: tela inicial com pendências (rabino e direção), shiur, grade de notas, scan pelo celular, frequência, boletim
-- [ ] Revisão do protótipo com o seu pai e um rabino, e ajustes
+- [ ] Revisão do protótipo com o seu pai e um rabino, e ajustes (o usuário pediu para seguir sem esperar)
 - [x] Biblioteca de componentes Jinja (macros) baseada no protótipo
 
 Ajustes pedidos na revisão do protótipo:
@@ -387,12 +390,12 @@ Ajustes pedidos na revisão do protótipo:
 A partir daqui, cada fase termina com deploy.
 
 ### Fase 5: Cadastros (admin)
-- [ ] Anos letivos: criar, trimestres, escala
-- [ ] Catálogo de matérias
-- [ ] Alunos: CRUD, busca por nome e por matrícula
-- [ ] Botão "Inserir aluno" na lista geral: cadastra e permite escolher o shiur na hora ou deixar sem shiur
-- [ ] Turmas do ano: nome, nível, rabino da turma
-- [ ] Matérias da turma: rabino padrão, rabino por trimestre, nome no boletim, ordem, desativar
+- [x] Anos letivos: criar, trimestres, escala
+- [x] Catálogo de matérias
+- [x] Alunos: CRUD, busca por nome e por matrícula
+- [x] Botão "Inserir aluno" na lista geral: cadastra e permite escolher o shiur na hora ou deixar sem shiur
+- [x] Turmas do ano: nome, nível, rabino da turma
+- [x] Matérias da turma: rabino padrão, rabino por trimestre, nome no boletim, ordem, desativar
 
 ### Fase 6: Montagem do ano
 - [ ] Botão "Criar shiur": assistente numa tela só, com nome e nível, rabino da turma (escolher ou cadastrar na hora), matérias com seus rabinos e alunos (buscar existentes, cadastrar novos ou colar uma lista de nomes)

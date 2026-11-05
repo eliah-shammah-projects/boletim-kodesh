@@ -1,0 +1,65 @@
+{% extends "layouts/app.html" %}
+{% from "components/ui.html" import button, status, card, page_header, empty_state %}
+{% from "components/forms.html" import csrf_field %}
+{% block title %}{{ student.full_name }}{% endblock %}
+{% block content %}
+{% call page_header(student.full_name, "Nº " ~ student.id ~ (", matrícula " ~ student.external_id if student.external_id else ""), back_href=url_for("students.index"), back_label="Alunos") %}
+  {% if current_user.is_admin %}{{ button("Editar dados", variant="secondary", href=url_for("students.edit", student_id=student.id)) }}{% endif %}
+{% endcall %}
+{% if not student.is_active %}<div class="mb-6">{{ status("neutral", "Aluno inativo") }}</div>{% endif %}
+
+<div class="grid gap-6 lg:grid-cols-3">
+  <div class="grid min-w-0 content-start gap-6 lg:col-span-2">
+    {% call card("Shiurim por ano", padded=False) %}
+    {% if history %}
+    <ul class="divide-y divide-border px-5 sm:px-6">
+      {% for sy, enrollments in history %}
+      <li class="py-4">
+        <p class="font-semibold">{{ sy.academic_year.name }} <span class="font-normal text-gray">{{ grades.get(sy.school_grade, "") }}{% if sy.secular_class_label %}, turma laica {{ sy.secular_class_label }}{% endif %}</span></p>
+        {% if enrollments %}
+        <ul class="mt-2 grid gap-1">
+          {% for e in enrollments %}
+          <li class="flex flex-wrap items-center gap-x-2">
+            <span class="size-3 rounded-full" style="background: {{ shiur_colors[e.kodesh_class.color] }}" aria-hidden="true"></span>
+            <a href="{{ url_for('classes.detail', class_id=e.kodesh_class.id) }}" class="font-medium text-primary hover:underline">{{ e.kodesh_class.name }}</a>
+            <span class="text-sm text-gray">desde {{ e.start_date.strftime("%d/%m") }}{% if e.end_date %} até {{ e.end_date.strftime("%d/%m") }}{% endif %}</span>
+          </li>
+          {% endfor %}
+        </ul>
+        {% else %}
+        <p class="mt-1 text-sm text-warning-dark">Sem shiur neste ano.</p>
+        {% endif %}
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <div class="px-5 pb-5 sm:px-6">{{ empty_state("O aluno ainda não está em nenhum ano letivo.") }}</div>
+    {% endif %}
+    {% endcall %}
+  </div>
+
+  <div class="grid content-start gap-6">
+    {% call card("Dados do aluno") %}
+    <dl class="grid gap-3">
+      <div><dt class="text-sm text-gray">Nome em hebraico</dt><dd class="font-medium">{% if student.hebrew_name %}<span lang="he" dir="rtl">{{ student.hebrew_name }}</span>{% else %}Não informado{% endif %}</dd></div>
+      <div><dt class="text-sm text-gray">Nascimento</dt><dd class="font-medium">{{ student.birth_date.strftime("%d/%m/%Y") if student.birth_date else "Não informado" }}</dd></div>
+      <div><dt class="text-sm text-gray">Matrícula da secretaria</dt><dd class="font-medium">{{ student.external_id or "Não informada" }}</dd></div>
+      {% if student.notes %}<div><dt class="text-sm text-gray">Observações</dt><dd>{{ student.notes }}</dd></div>{% endif %}
+    </dl>
+    {% endcall %}
+    {% call card("Pais", "Recebem o boletim por email.") %}
+    <dl class="grid gap-3">
+      <div><dt class="text-sm text-gray">Responsável</dt><dd class="font-medium">{{ student.parent_name or "Não informado" }}</dd></div>
+      <div><dt class="text-sm text-gray">Telefone</dt><dd class="font-medium tabular-nums">{{ student.parent_phone or "Não informado" }}</dd></div>
+      <div><dt class="text-sm text-gray">Emails</dt><dd class="font-medium break-all">{{ student.parent_email or "Não informado" }}{% if student.parent_email_2 %}<br>{{ student.parent_email_2 }}{% endif %}</dd></div>
+    </dl>
+    {% endcall %}
+    {% if current_user.is_admin %}
+    <form method="post" action="{{ url_for('students.toggle_active', student_id=student.id) }}">
+      {{ csrf_field() }}
+      {{ button("Reativar aluno" if not student.is_active else "Desativar aluno", variant="secondary", type="submit", full=True) }}
+    </form>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

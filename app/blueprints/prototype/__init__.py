@@ -35,8 +35,7 @@ def _page(template: str, persona: str = "rabbi", active: str = "", **context):
         user_name=user,
         home_href=url_for("prototype.index"),
         year_options=[
-            (name, url_for("prototype.index", ano=name), archived)
-            for name, archived in data.YEARS
+            (name, url_for("prototype.index", ano=name), archived) for name, archived in data.YEARS
         ],
         selected_year=selected,
         year_archived=years[selected],
